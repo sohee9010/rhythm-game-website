@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Motion Controller</title>
+    <!-- Local Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Local MediaPipe Pose -->
+    <script src="/static/mediapipe/pose.js"></script>
+    <script src="/static/mediapipe/camera_utils.js"></script>
+    <script src="/static/mediapipe/drawing_utils.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* 거울 모드 */
+            z-index: 0;
+        }
+
+        canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            z-index: 1;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #status-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #4dff4d;
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            display: none;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(77, 255, 77, 0.5);
+        }
+
+        #cam-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #4d4dff;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(77, 77, 255, 0.5);
+        }
+
+        #pose-feedback {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            color: yellow;
+        }
+
+        #error-msg {
+            color: #ff4d4d;
+            margin-top: 20px;
+            font-size: 14px;
+            max-width: 80%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Global Error Handler -->
+    <div id="debug-console"
+        style="position:fixed; top:0; left:0; width:100%; height:50%; background:rgba(0,0,0,0.8); color:red; z-index:9999; overflow:scroll; pointer-events:none; font-size:12px;">
+    </div>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            var console = document.getElementById('debug-console');
+            if (console) console.innerHTML += "Error: " + msg + "<br>Line: " + line + "<br>" + url + "<br><br>";
+            return false;
+        };
+    </script>
+
+    <!-- Loading Screen -->
+    <div id="loading-msg"
+        style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:white; font-size:30px; z-index:9998; text-align:center;">
+        LOADING...<br>
+        <span style="font-size:16px; color:#aaa;">Waiting for scripts...</span>
+    </div>
+
+    <div id="container">
+        <video id="input_video" playsinline></video>
+        <canvas id="output_canvas"></canvas>
+        <div id="pose-feedback"></div>
+
+        <div id="overlay">
+            <div id="status-text">Ready to Connect (v2.3)</div>
+            <button id="cam-btn">ENABLE CAMERA</button>
+            <button id="start-btn">TAP TO START</button>
+            <div id="error-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const loadingMsg = document.getElementById('loading-msg');
+        let socket;
+        try {
+            socket = io();
+            loadingMsg.style.display = 'none'; // Hide loading if socket works
+            console.log("Socket initialized");
+        } catch (e) {
+            console.error("Socket.IO failed:", e);
+            document.getElementById('debug-console').innerHTML += "Socket Error: " + e + "<br>";
+        }
+
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const statusText = document.getElementById('status-text');
+        const startBtn = document.getElementById('start-btn');
+        const camBtn = document.getElementById('cam-btn');
+        const overlay = document.getElementById('overlay');
+        const feedback = document.getElementById('pose-feedback');
+        const errorMsg = document.getElementById('error-msg');
+
+        let isGameRunning = false;
+        let lastPose = "";
+
+        // 소켓 연결 이벤트
+        if (socket) {
+            socket.on('connect', () => {
+                console.log("Connected to server");
+            });
+        }
+
+        // MediaPipe Pose 설정 (로컬 경로)
+        const pose = new Pose({
+            locateFile: (file) => {
+                return `/static/mediapipe/${file}`;
+            }
+        });
+
+        pose.setOptions({
+            modelComplexity: 0, // Lite Model (Fast)
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        pose.onResults(onResults);
+
+        // 카메라 권한 버튼
+        camBtn.addEventListener('click', () => {
+            statusText.innerText = "Initializing Camera...";
+            camBtn.style.display = 'none';
+            errorMsg.innerText = "";
+
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await pose.send({ image: videoElement });
+                },
+                width: 640,
+                height: 480
+            });
+
+            camera.start()
+                .then(() => {
+                    statusText.innerText = "AI Ready!";
+                    startBtn.style.display = "block";
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusText.innerText = "Camera Failed";
+                    errorMsg.innerText = "Error: " + err + "\n(Check browser permissions)";
+                    camBtn.style.display = 'block';
+                    camBtn.innerText = "RETRY CAMERA";
+                });
+        });
+
+        // 시작 버튼 클릭
+        startBtn.addEventListener('click', () => {
+            isGameRunning = true;
+            overlay.style.display = 'none';
+            if (socket) socket.emit('client_ready');
+        });
+
+        function onResults(results) {
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.poseLandmarks) {
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                    { color: '#00FF00', lineWidth: 4 });
+                drawLandmarks(canvasCtx, results.poseLandmarks,
+                    { color: '#FF0000', lineWidth: 2 });
+
+                detectPose(results.poseLandmarks);
+            }
+            canvasCtx.restore();
+        }
+
+        function detectPose(landmarks) {
+            if (!isGameRunning) return;
+
+            const nose = landmarks[0];
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+
+            if (leftWrist.visibility < 0.5 || rightWrist.visibility < 0.5) return;
+
+            let currentPose = "";
+
+            const handsUp = leftWrist.y < leftShoulder.y && rightWrist.y < rightShoulder.y;
+            const handsCrossed = Math.abs(leftWrist.x - rightWrist.x) < 0.15;
+            const handsApart = Math.abs(leftWrist.x - rightWrist.x) > 0.5;
+
+            // 1. O (Circle)
+            if (handsUp && handsCrossed) {
+                currentPose = "O";
+            }
+            // 2. High (Manse)
+            else if (handsUp && handsApart) {
+                currentPose = "HIGH";
+            }
+            // 3. Side (Open)
+            else if (!handsUp && handsApart && Math.abs(leftWrist.y - leftShoulder.y) < 0.2) {
+                currentPose = "SIDE";
+            }
+            // 4. X (Cross)
+            else if (!handsUp && handsCrossed && leftWrist.y > leftShoulder.y) {
+                currentPose = "X";
+            }
+
+            if (currentPose !== "" && currentPose !== lastPose) {
+                lastPose = currentPose;
+                feedback.innerText = currentPose;
+                feedback.style.color = getColorForPose(currentPose);
+                if (socket) socket.emit('pose_event', { pose: currentPose });
+                setTimeout(() => feedback.innerText = "", 500);
+            }
+        }
+
+        function getColorForPose(pose) {
+            switch (pose) {
+                case "O": return "#ff4d4d";
+                case "X": return "#4dff4d";
+                case "HIGH": return "#4d4dff";
+                case "SIDE": return "#ffff4d";
+                default: return "white";
+            }
+        }
+    </script>
+</body>
+
+</html>
