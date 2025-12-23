@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react({
     include: "**/*.{jsx,tsx,js,ts}",
   })],
+  base: '/rhythm-game-website/', // [FIX] GitHub Pages Repository Name
   esbuild: {
     loader: 'tsx',
     include: /src\/.*\.[jt]sx?$/,
