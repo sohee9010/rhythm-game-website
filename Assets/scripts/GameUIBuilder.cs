@@ -18,7 +18,10 @@ public class GameUIBuilder : MonoBehaviour
             GameObject canvasObj = new GameObject("GameCanvas");
             canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasObj.AddComponent<CanvasScaler>();
+            CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
             canvasObj.AddComponent<GraphicRaycaster>();
         }
 
@@ -38,12 +41,14 @@ public class GameUIBuilder : MonoBehaviour
         // 0. 남은 시간 텍스트 (상단 중앙)
         CreateText(parent, "TimerText", "00:00", new Vector2(0, -50), 40, Color.white);
 
-        // 1. 일시정지 버튼 (우측 상단)
-        CreateButton(parent, "PauseButton", "PAUSE", new Vector2(860, 440), new Vector2(120, 60), () => {
+        // 1. 일시정지 버튼 (우측 상단 고정)
+        // 화면 크기 1920x1080 기준, 우측 상단은 (1920, 1080) / 2 가 아니라 Anchor 기준
+        // Anchor를 우측 상단(1,1)으로 잡고 offset으로 배치
+        CreateButton(parent, "PauseButton", "PAUSE", new Vector2(-100, -80), new Vector2(150, 60), () => {
             Debug.Log("[GameUIBuilder] Pause Button Clicked!");
             gameManager.PauseGame();
             pauseMenuPanel.SetActive(true);
-        });
+        }, true); // isAnchorTopRight = true
 
         // 2. 일시정지 메뉴 패널 (초기엔 비활성화)
         CreatePauseMenu(parent);
@@ -107,7 +112,7 @@ public class GameUIBuilder : MonoBehaviour
     }
 
     // 버튼 생성 헬퍼
-    GameObject CreateButton(Transform parent, string name, string text, Vector2 anchoredPos, Vector2 size, UnityEngine.Events.UnityAction onClick)
+    GameObject CreateButton(Transform parent, string name, string text, Vector2 anchoredPos, Vector2 size, UnityEngine.Events.UnityAction onClick, bool isAnchorTopRight = false)
     {
         GameObject btnObj = new GameObject(name);
         btnObj.transform.SetParent(parent, false);
@@ -119,6 +124,19 @@ public class GameUIBuilder : MonoBehaviour
         btn.onClick.AddListener(onClick);
 
         RectTransform rect = btnObj.GetComponent<RectTransform>();
+        if (isAnchorTopRight)
+        {
+            rect.anchorMin = Vector2.one; // (1, 1) 우측 상단
+            rect.anchorMax = Vector2.one;
+            rect.pivot = Vector2.one;
+        }
+        else
+        {
+            // 기본값: 중앙
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+        }
         rect.sizeDelta = size;
         rect.anchoredPosition = anchoredPos;
 
@@ -126,13 +144,12 @@ public class GameUIBuilder : MonoBehaviour
         textObj.transform.SetParent(btnObj.transform, false);
         Text txt = textObj.AddComponent<Text>();
         txt.text = text;
-        txt.text = text;
         Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         txt.font = font;
         txt.alignment = TextAnchor.MiddleCenter;
         txt.color = Color.white;
-        txt.fontSize = 20;
+        txt.fontSize = 24; // 글자 크기 조금 키움
         
         RectTransform textRect = textObj.GetComponent<RectTransform>();
         textRect.anchorMin = Vector2.zero;
