@@ -38,7 +38,7 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
         for (int i = 0; i < laneKeys.Length; i++)
         {
             if (Input.GetKeyDown(laneKeys[i]))
@@ -85,7 +85,7 @@ public class InputManager : MonoBehaviour
     // 외부(네트워크 등)에서 입력을 발생시키는 함수
     public void TriggerLane(int laneIndex)
     {
-        if (GameManager.Instance.isPaused) return;
+        if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
         CheckHit(laneIndex);
         ShowHitEffect(laneIndex);
     }

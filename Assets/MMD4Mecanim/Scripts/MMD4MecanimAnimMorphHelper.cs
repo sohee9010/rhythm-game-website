@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
 using Morph				= MMD4MecanimModel.Morph;
 using MorphCategory		= MMD4MecanimData.MorphCategory;
 using MorphType			= MMD4MecanimData.MorphType;
@@ -418,3 +419,4 @@ public class MMD4MecanimAnimMorphHelper : MonoBehaviour, IAnimModel
 		}
 	}
 }
+#endif

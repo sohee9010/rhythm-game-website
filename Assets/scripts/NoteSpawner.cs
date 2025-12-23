@@ -47,7 +47,7 @@ public class NoteSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!GameManager.Instance.isPlaying || GameManager.Instance.isPaused) return;
+        if (GameManager.Instance == null || !GameManager.Instance.isPlaying || GameManager.Instance.isPaused) return;
 
         songPosition += Time.deltaTime;
 

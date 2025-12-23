@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
 public class MMD4MecanimSpeechHelper : MMD4MecanimMorphHelper
 {
 	public AudioClip			speechAudioClip;
@@ -780,3 +781,4 @@ public class MMD4MecanimSpeechHelper : MMD4MecanimMorphHelper
 		}
 	}
 }
+#endif
