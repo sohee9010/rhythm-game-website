@@ -29,7 +29,7 @@ public class LobbyUIBuilder : MonoBehaviour
         if (Application.isPlaying)
         {
             // NetworkManager 없으면 생성
-            if (Object.FindFirstObjectByType<NetworkManager>() == null)
+            if (Object.FindObjectOfType<NetworkManager>() == null)
             {
                 new GameObject("NetworkManager").AddComponent<NetworkManager>();
             }
@@ -40,7 +40,7 @@ public class LobbyUIBuilder : MonoBehaviour
             SetGameReady(true);
 
             // 이벤트 연결
-            NetworkManager net = Object.FindFirstObjectByType<NetworkManager>();
+            NetworkManager net = Object.FindObjectOfType<NetworkManager>();
             if (net != null)
             {
                 net.OnConnected += OnClientConnected;
@@ -51,7 +51,7 @@ public class LobbyUIBuilder : MonoBehaviour
     private void OnClientConnected()
     {
         // 연결되면 바로 시작하지 않고 카운트다운 시작
-        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = Object.FindObjectOfType<Canvas>();
         if (canvas != null)
         {
             GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
@@ -92,29 +92,81 @@ public class LobbyUIBuilder : MonoBehaviour
 
     public void OnStartButtonClicked()
     {
-        NetworkManager net = NetworkManager.Instance;
-        if (net != null && net.isConnected)
+        Debug.Log("[LobbyUIBuilder] Start Button Clicked! (Immedate Start)"); // [DEBUG]
+        // [FIX] 사용자 요청으로 바로 시작 (QR 코드 건너뜀)
+        GetComponent<LobbyManager>().StartGame();
+
+        /* 원래 로직 (QR 코드/연결 대기)
+        SetGameReady(false);
+        ReloadQRCode();
+        */
+    }
+
+    private void ReloadQRCode()
+    {
+        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        if (canvas != null)
         {
-            // 이미 연결되어 있으면 바로 시작
-            GetComponent<LobbyManager>().StartGame();
-        }
-        else
-        {
-            // 연결 안 되어 있으면 QR 코드 패널 표시
-            SetGameReady(false);
+            GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
+            if (panel != null)
+            {
+                Transform cardTrans = panel.transform.Find("CardBackground");
+                if (cardTrans != null)
+                {
+                    Transform qrTrans = cardTrans.Find("QRCode");
+                    if (qrTrans != null)
+                    {
+                        RawImage qrImg = qrTrans.GetComponent<RawImage>();
+                        if (qrImg != null)
+                        {
+                            // [FIX] Resources.Load를 우선 사용하고, 파일 시스템은 보조로 사용
+                            Texture2D tex = Resources.Load<Texture2D>("qrcode");
+                            if (tex != null)
+                            {
+                                qrImg.texture = tex;
+                                Debug.Log("QR Code Reloaded from Resources");
+                            }
+                            else
+                            {
+                                // Resources에 없으면 파일 시스템 확인 (에디터 환경 등)
+                                string path = System.IO.Path.Combine(Application.dataPath, "Resources", "qrcode.png");
+                                if (System.IO.File.Exists(path))
+                                {
+                                    byte[] bytes = System.IO.File.ReadAllBytes(path); // This might be locked if resources loads it, but usually fine
+                                    tex = new Texture2D(2, 2);
+                                    tex.LoadImage(bytes);
+                                    qrImg.texture = tex;
+                                    Debug.Log("QR Code Reloaded from file system");
+                                }
+                                else
+                                {
+                                    Debug.LogWarning("QR Code file not found at " + path);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     private void SetGameReady(bool isReady)
     {
-        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
-        if (canvas == null) return;
+        Debug.Log($"[LobbyUIBuilder] SetGameReady: {isReady}"); // [DEBUG]
+        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("[LobbyUIBuilder] Canvas not found!");
+            return;
+        }
 
         GameObject startBtn = FindChild(canvas.gameObject, "StartButton");
         if (startBtn != null) startBtn.SetActive(isReady);
+        else Debug.LogError("[LobbyUIBuilder] StartButton not found!");
 
         GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
         if (panel != null) panel.SetActive(!isReady);
+        else Debug.LogError("[LobbyUIBuilder] ConnectionPanel not found!");
     }
 
     private void OnValidate()
@@ -131,13 +183,26 @@ public class LobbyUIBuilder : MonoBehaviour
             _isDirty = false;
             BuildUI();
         }
+        
+        // [DEBUG] 클릭 디버깅
+        if (Input.GetMouseButtonDown(0))
+        {
+            // EventSystem이 현재 마우스 위에 있는 UI를 감지하는지 확인
+            if (UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                 GameObject selected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+                 // PointerOverGameObject는 모바일/터치에서는 ID 필요하지만 PC에서는 -1 or default
+                 bool isPointerOver = UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+                 Debug.Log($"[LobbyUIBuilder] MouseDown. PointerOverUI: {isPointerOver}");
+            }
+        }
     }
 
     [ContextMenu("Build Lobby UI")]
     public void BuildUI()
     {
         // 1. Canvas 찾기 또는 생성
-        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = Object.FindObjectOfType<Canvas>();
         if (canvas == null)
         {
             GameObject canvasObj = new GameObject("Canvas");
@@ -151,12 +216,31 @@ public class LobbyUIBuilder : MonoBehaviour
             scaler.matchWidthOrHeight = 0.5f;
         }
 
-        // 1.5 EventSystem 찾기 또는 생성 (UI 클릭 필수요소)
-        if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+        // [FIX] GraphicRaycaster가 없으면 추가 (이게 없으면 클릭 안됨)
+        if (canvas.GetComponent<GraphicRaycaster>() == null)
         {
+            Debug.LogWarning("[LobbyUIBuilder] Missing GraphicRaycaster! Adding one.");
+            canvas.gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        // 1.5 EventSystem 찾기 또는 생성 (UI 클릭 필수요소)
+        UnityEngine.EventSystems.EventSystem es = Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+        if (es == null)
+        {
+            Debug.Log("[LobbyUIBuilder] Creating EventSystem...");
             GameObject eventSystem = new GameObject("EventSystem");
-            eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            es = eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
             eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+        else
+        {
+            Debug.Log("[LobbyUIBuilder] EventSystem found.");
+            // [FIX] 만약 StandaloneInputModule이 없으면 추가 (중요)
+            if (es.GetComponent<UnityEngine.EventSystems.StandaloneInputModule>() == null)
+            {
+                 Debug.LogWarning("[LobbyUIBuilder] EventSystem missing InputModule! Adding one.");
+                 es.gameObject.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
         }
 
         // 2. 배경 (Panel)
@@ -368,10 +452,17 @@ public class LobbyUIBuilder : MonoBehaviour
             subTxtRt.anchoredPosition = new Vector2(0, -250);
             subTxtRt.sizeDelta = new Vector2(700, 100);
 
-            // 6. 취소 버튼
+            // 7. 취소 버튼
             CreateButton(cardObj.transform, "CancelButton", "CANCEL", new Vector2(0, -380), new Color(0.3f, 0.3f, 0.3f), Color.white, null, new Vector2(300, 80), () => {
                 SetGameReady(true); // 다시 메인으로
             });
+
+            // [FIX] 테스트용 버튼 제거 (사용자가 헷갈려함)
+            /*
+            CreateButton(cardObj.transform, "TestStartButton", "TEST START", new Vector2(0, -350), new Color(0.2f, 0.6f, 0.2f), Color.white, null, new Vector2(300, 80), () => {
+                GetComponent<LobbyManager>().StartGame();
+            });
+            */
         }
         else
         {
@@ -386,6 +477,13 @@ public class LobbyUIBuilder : MonoBehaviour
                     Texture2D qrTex = Resources.Load<Texture2D>("qrcode");
                     if (qrTex != null) qrImg.texture = qrTex;
                 }
+
+                // [FIX] 이미 패널이 있어도 버튼이 없으면 생성하지 않음 (TestStartButton 제거)
+                /*
+                CreateButton(cardTrans, "TestStartButton", "TEST START", new Vector2(0, -350), new Color(0.2f, 0.6f, 0.2f), Color.white, null, new Vector2(300, 80), () => {
+                    GetComponent<LobbyManager>().StartGame();
+                });
+                */
             }
         }
     }
@@ -406,7 +504,7 @@ public class LobbyUIBuilder : MonoBehaviour
                 img.sprite = sprite;
                 img.color = Color.white; // 이미지가 있으면 흰색(원본색)
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 투명한 부분 클릭 무시
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 다시 활성화 (버튼 겹침 방지)
             }
             else
             {
@@ -477,7 +575,7 @@ public class LobbyUIBuilder : MonoBehaviour
                 img.sprite = sprite;
                 img.color = Color.white;
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 투명한 부분 클릭 무시
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 다시 활성화 (버튼 겹침 방지)
                 if (txtObj != null) DestroyImmediate(txtObj);
             }
             
@@ -526,6 +624,12 @@ public class LobbyUIBuilder : MonoBehaviour
         {
             buttonComponent.onClick.RemoveAllListeners();
             buttonComponent.onClick.AddListener(action);
+        }
+
+        // [FIX] 버튼이 다른 UI에 가려지지 않도록 맨 앞으로 가져오기
+        if (btnObj != null)
+        {
+            btnObj.transform.SetAsLastSibling();
         }
     }
 

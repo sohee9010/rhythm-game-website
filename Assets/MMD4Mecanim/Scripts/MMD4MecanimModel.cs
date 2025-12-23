@@ -1,6 +1,7 @@
 // - Don't upload model data, motion data, audio tracks, and codes to public space(github, etc...) without permission.
 using UnityEngine;
 
+#if UNITY_EDITOR
 [ExecuteInEditMode ()] // for Morph
 public class MMD4MecanimModel : MMD4MecanimModelImpl
 {
@@ -32,3 +33,4 @@ public class MMD4MecanimModel : MMD4MecanimModelImpl
 		}
 	}
 }
+#endif

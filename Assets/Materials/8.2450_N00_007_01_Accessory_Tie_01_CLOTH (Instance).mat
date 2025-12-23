@@ -8,18 +8,18 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 8.2450_N00_007_01_Accessory_Tie_01_CLOTH (Instance)
-  m_Shader: {fileID: 4800000, guid: ce30c458c6721a7448c5039c3ed34350, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2e8035f711996f54199b336ae35ac857, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - SELFSHADOW_ON
   - SPHEREMAP_ADD
-  m_InvalidKeywords:
   - _TOON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2010
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -77,7 +77,7 @@ Material:
     - _AddLightToonMin: 0.5
     - _AmbientToDiffuse: 5
     - _BumpScale: 1
-    - _Cutoff: 0.5
+    - _Cutoff: 0.1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EdgeScale: 0.001
@@ -89,7 +89,10 @@ Material:
     - _Mode: 0
     - _NoShadowCasting: 0
     - _OcclusionStrength: 1
+    - _Outline: 0.002
     - _Parallax: 0.02
+    - _RampSmooth: 0.1
+    - _RampThreshold: 0.5
     - _Revision: 2
     - _ShadowLum: 1.5
     - _Shininess: 0
@@ -107,6 +110,7 @@ Material:
     - _EdgeColor: {r: 0.27451, g: 0.090196, b: 0.12549, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _Specular: {r: 0, g: 0, b: 0, a: 0}
     - _ToonTone: {r: 1, g: 0.5, b: 0.5, a: 0}
   m_BuildTextureStacks: []

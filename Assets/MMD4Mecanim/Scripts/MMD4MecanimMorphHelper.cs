@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
 public class MMD4MecanimMorphHelper : MonoBehaviour
 {
 	public float							morphSpeed = 0.1f;
@@ -114,3 +115,4 @@ public class MMD4MecanimMorphHelper : MonoBehaviour
 		}
 	}
 }
+#endif
