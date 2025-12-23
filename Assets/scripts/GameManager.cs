@@ -216,10 +216,34 @@ public class GameManager : MonoBehaviour
         string debugInfo = $"isPlaying: {isPlaying}\n" +
                            $"isPaused: {isPaused}\n" +
                            $"Time.timeScale: {Time.timeScale}\n" +
-                           $"Music: {musicStatus} / Clip: {clipStatus}\n" +
-                           $"Music Time: {(musicSource != null ? musicSource.time.ToString("F1") : "-")}";
+                           $"Music: {musicStatus} / Clip: {clipStatus}\n";
+        // GUI.Label(new Rect(10, 200, 500, 200), debugInfo);
 
-        GUI.Label(new Rect(10, 200, 500, 200), debugInfo);
+        // [FallBack -> Main] Legacy GUI 버튼 사용 (uGUI 클릭 이슈 해결책)
+        // 스타일 설정
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+        buttonStyle.fontSize = 24;
+        buttonStyle.fontStyle = FontStyle.Bold;
+        buttonStyle.normal.textColor = Color.white;
+        
+        // 배경색 조정 (검정 반투명)
+        GUI.backgroundColor = new Color(0, 0, 0, 0.8f);
+
+        if (GUI.Button(new Rect(Screen.width - 160, 20, 140, 60), isPaused ? "RESUME" : "PAUSE", buttonStyle))
+        {
+            if (isPaused) {
+                ResumeGame();
+                // PauseMenuPanel도 꺼야 함 (GameUIBuilder 참조가 없으므로 Find로 처리하거나 단순화)
+                GameObject pPanel = GameObject.Find("PauseMenuPanel");
+                if(pPanel != null) pPanel.SetActive(false);
+            }
+            else {
+                PauseGame();
+                // PauseMenuPanel 켜기
+                GameObject pPanel = GameObject.Find("GameCanvas")?.transform.Find("PauseMenuPanel")?.gameObject;
+                if(pPanel != null) pPanel.SetActive(true);
+            }
+        }
     }
 
     public void RestartGame()
