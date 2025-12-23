@@ -23,6 +23,7 @@ public class GameUIBuilder : MonoBehaviour
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
             canvasObj.AddComponent<GraphicRaycaster>();
+            canvas.sortingOrder = 100; // [FIX] 다른 UI보다 위에 오도록 강제 설정
         }
 
         // EventSystem 확인
@@ -41,14 +42,14 @@ public class GameUIBuilder : MonoBehaviour
         // 0. 남은 시간 텍스트 (상단 중앙)
         CreateText(parent, "TimerText", "00:00", new Vector2(0, -50), 40, Color.white);
 
-        // 1. 일시정지 버튼 (우측 상단 고정)
-        // 화면 크기 1920x1080 기준, 우측 상단은 (1920, 1080) / 2 가 아니라 Anchor 기준
-        // Anchor를 우측 상단(1,1)으로 잡고 offset으로 배치
+        // 1. 일시정지 버튼 (우측 상단 고정) -> [FIX] uGUI 버튼 클릭 문제로 인해 GameManager의 IMGUI 버튼으로 대체함
+        /*
         CreateButton(parent, "PauseButton", "PAUSE", new Vector2(-100, -80), new Vector2(150, 60), () => {
             Debug.Log("[GameUIBuilder] Pause Button Clicked!");
             gameManager.PauseGame();
             pauseMenuPanel.SetActive(true);
-        }, true); // isAnchorTopRight = true
+        }, true); 
+        */
 
         // 2. 일시정지 메뉴 패널 (초기엔 비활성화)
         CreatePauseMenu(parent);
@@ -155,6 +156,12 @@ public class GameUIBuilder : MonoBehaviour
         textRect.anchorMin = Vector2.zero;
         textRect.anchorMax = Vector2.one;
         textRect.sizeDelta = Vector2.zero;
+
+        // [FIX] 텍스트가 버튼 클릭을 가로채지 않도록 설정
+        txt.raycastTarget = false;
+
+        // [FIX] 버튼이 다른 UI 위에 오도록 맨 나중으로 순서 변경
+        btnObj.transform.SetAsLastSibling();
 
         return btnObj;
     }
