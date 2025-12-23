@@ -51,7 +51,7 @@ const AppContent: React.FC = () => {
   // For now, removing the hook usage as WishlistContext is gone.
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
       <div className="w-full min-h-screen m-0 p-0 bg-black text-white"> {/* Default dark theme */}
         <ConditionalHeader />
