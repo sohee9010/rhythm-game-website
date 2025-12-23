@@ -98,7 +98,8 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         // 디버그용: P 키로 일시정지 테스트
-        if (Input.GetKeyDown(KeyCode.P))
+        // 디버그용: P 키 또는 ESC 키로 일시정지
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused) ResumeGame();
             else PauseGame();
