@@ -35,7 +35,8 @@ const GamePage: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen overflow-hidden bg-black p-4">
             <h1 className="text-2xl text-white font-bold mb-2">MOTION RHYTHM</h1>
-            <div className="w-full max-w-[960px] aspect-[960/600] relative group">
+            <h1 className="text-2xl text-white font-bold mb-2">MOTION RHYTHM</h1>
+            <div className="w-full max-w-[1280px] aspect-video relative group shadow-2xl">
                 <button
                     onClick={() => {
                         console.log("Close button clicked");
@@ -61,11 +62,11 @@ const GamePage: React.FC = () => {
                 </button>
                 <iframe
                     ref={iframeRef}
-                    src={`${import.meta.env.BASE_URL}game/index.html`}
+                    src={`${import.meta.env.BASE_URL}game/index.html?v=${Date.now()}`}
                     title="Rhythm Game"
-                    width="960"
-                    height="600"
-                    className="w-full h-full border-0 rounded-lg shadow-[0_0_50px_rgba(168,85,247,0.2)]"
+                    width="100%"
+                    height="100%"
+                    className="w-full h-full border-0 rounded-lg shadow-[0_0_50px_rgba(168,85,247,0.2)] bg-black"
                     allowFullScreen
                 />
             </div>
