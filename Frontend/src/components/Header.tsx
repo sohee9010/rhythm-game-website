@@ -25,7 +25,7 @@ const Header: React.FC = () => {
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold tracking-tighter hover:text-purple-400 transition-colors flex items-center gap-2 no-underline text-white">
           <span className="text-purple-500 text-3xl">⚡</span>
-          <span>MOTION RHYTHM</span>
+          <span>Rhythm School</span>
         </Link>
 
         {/* Desktop Navigation */}
