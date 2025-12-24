@@ -51,7 +51,7 @@ const LoginPage: React.FC = () => {
       <div className="bg-gray-900/50 p-12 w-full max-w-[420px] rounded-2xl border border-gray-800 shadow-[0_0_30px_rgba(168,85,247,0.1)] backdrop-blur-sm">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">LOGIN</h1>
-          <p className="text-gray-400 text-sm m-0">Welcome back to MOTION RHYTHM</p>
+          <p className="text-gray-400 text-sm m-0">Welcome back to Rhythm School</p>
         </div>
 
         <form className="mb-8" onSubmit={handleSubmit}>

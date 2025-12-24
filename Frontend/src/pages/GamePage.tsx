@@ -34,8 +34,7 @@ const GamePage: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen overflow-hidden bg-black p-4">
-            <h1 className="text-2xl text-white font-bold mb-2">MOTION RHYTHM</h1>
-            <h1 className="text-2xl text-white font-bold mb-2">MOTION RHYTHM</h1>
+            <h1 className="text-2xl text-white font-bold mb-2">Rhythm School</h1>
             <div className="w-full max-w-[1280px] aspect-video relative group shadow-2xl">
                 <button
                     onClick={() => {
