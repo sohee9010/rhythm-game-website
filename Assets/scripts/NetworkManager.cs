@@ -140,28 +140,6 @@ public class NetworkManager : MonoBehaviour
         StopServer();
     }
 
-    // [NEW] WebGL(브라우저)에서 SendMessage로 호출할 함수
-    public void ReceiveInput(string value)
-    {
-        if (value == "CONNECT")
-        {
-            isConnected = true;
-            inputQueue.Enqueue(-1);
-        }
-        else if (value == "CANCEL")
-        {
-            // 연결 취소 or QR 닫기
-            isConnected = false;
-        }
-        else
-        {
-            if (int.TryParse(value, out int lane))
-            {
-                inputQueue.Enqueue(lane);
-            }
-        }
-    }
-
     private void StopServer()
     {
         isRunning = false;

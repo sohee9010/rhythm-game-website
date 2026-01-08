@@ -4,36 +4,37 @@ using UnityEngine.SceneManagement;
 public class LobbyManager : MonoBehaviour
 {
     [Header("Scene Names")]
-    public string gameSceneName = "Game"; 
+    public string gameSceneName = "Main"; // [FIX] Default to Main scene
 
-    private string _log = "";
-    
-
-
-    public void StartGame()
+    private void Start()
     {
-        Time.timeScale = 1f; // 중요: 게임 시작 전 시간 속도 초기화
-        _log = $"Attempting to load: {gameSceneName}";
-        Debug.Log($"[LobbyManager] Request to load: {gameSceneName}");
-
-        try
+        // [FIX] Auto-find buttons if they are not hooked up in Inspector
+        var startBtn = GameObject.Find("StartButton")?.GetComponent<UnityEngine.UI.Button>();
+        if (startBtn != null) 
         {
-            SceneManager.LoadScene(gameSceneName);
+            startBtn.onClick.RemoveAllListeners();
+            startBtn.onClick.AddListener(StartGame);
+            startBtn.gameObject.SetActive(true); // Ensure visible
         }
-        catch (System.Exception e)
+
+        var quitBtn = GameObject.Find("QuitButton")?.GetComponent<UnityEngine.UI.Button>();
+        if (quitBtn != null)
         {
-            _log = $"Error: {e.Message}";
-            Debug.LogError($"[LobbyManager] LoadScene Failed: {e}");
+            quitBtn.onClick.RemoveAllListeners();
+            quitBtn.onClick.AddListener(QuitGame);
+            quitBtn.gameObject.SetActive(true); // Ensure visible
         }
     }
 
-    // [DEBUG] GUI 제거
-    // void OnGUI() { ... }
+    public void StartGame()
+    {
+        Debug.Log($"[LobbyManager] Loading Main Scene...");
+        SceneManager.LoadScene(gameSceneName);
+    }
 
     public void QuitGame()
     {
         // 어플리케이션 종료
-        _log = "Quitting...";
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

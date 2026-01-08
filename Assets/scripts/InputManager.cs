@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// 입력 매니저 (Game_first, Game_second 씬 모두 지원)
+/// </summary>
 public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
@@ -39,6 +42,7 @@ public class InputManager : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
+        
         for (int i = 0; i < laneKeys.Length; i++)
         {
             if (Input.GetKeyDown(laneKeys[i]))

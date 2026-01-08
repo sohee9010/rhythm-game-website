@@ -33,7 +33,8 @@ public class Note : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        // GameManager 참조 (통합됨)
+        if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
 
         transform.position += Vector3.down * speed * Time.deltaTime;
 
@@ -51,8 +52,11 @@ public class Note : MonoBehaviour
         float distance = Mathf.Abs(transform.position.y - judgmentLineY);
         JudgmentType judgment = CalculateJudgment(distance);
 
-        // 점수 올리기
-        GameManager.Instance.AddScore(GetPointsForJudgment(judgment));
+        // 점수 올리기 - GameManager 참조 (통합됨)
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddScore(GetPointsForJudgment(judgment));
+        }
 
         // 이펙트 터트리기
         if (hitEffectPrefab != null)
@@ -66,7 +70,13 @@ public class Note : MonoBehaviour
     private void OnMiss()
     {
         hasBeenHit = true;
-        GameManager.Instance.ResetCombo();
+        
+        // 콤보 리셋 - GameManager 참조 (통합됨)
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetCombo();
+        }
+        
         Destroy(gameObject);
     }
 
