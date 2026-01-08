@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f8a8aac5-4202-4dbc-af8d-c28a84c6ad17" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assembly-CSharp-Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Assembly-CSharp-Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assembly-CSharp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Assembly-CSharp.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/HitEffect.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/HitEffect.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/LiTea_sonic.unity" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/LiTea_sonic.unity.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.MMD4Mecanim.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.MMD4Mecanim.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.MMD4Mecanim.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.MMD4Mecanim.xml.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.controller" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.controller.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.extra.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.extra.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.fbx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.fbx.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.index.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.index.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.model.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.model.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.pmx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.pmx.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.vertex.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.vertex.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina.xml.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/LinaTaemin_sonic.unity" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/LinaTaemin_sonic.unity.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina_sonic.unity" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Lina_sonic.unity.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/MMD4Mecanim/Scripts/MMD4MecanimBulletPhysics.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/MMD4Mecanim/Scripts/MMD4MecanimBulletPhysics.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/0.2450_N00_000_00_Body_00_SKIN (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/0.2450_N00_000_00_Body_00_SKIN (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/1.2450_N00_000_00_EyeWhite_00_EYE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/1.2450_N00_000_00_EyeWhite_00_EYE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/10.2450_N00_007_01_Tops_01_CLOTH_02 (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/10.2450_N00_007_01_Tops_01_CLOTH_02 (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/11.2450_N00_007_02_Accessory_Tie_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/11.2450_N00_007_02_Accessory_Tie_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/11.2450_N00_007_02_Tops_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/11.2450_N00_007_02_Tops_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/12.2450_N00_007_02_Tops_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/12.2450_N00_007_02_Tops_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/12.3000_N00_000_00_EyeIris_00_EYE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/12.3000_N00_000_00_EyeIris_00_EYE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/13.3000_N00_000_00_EyeIris_00_EYE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/13.3000_N00_000_00_EyeIris_00_EYE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/13.3000_N00_000_00_FaceEyeline_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/13.3000_N00_000_00_FaceEyeline_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/14.3000_N00_000_00_FaceEyeline_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/14.3000_N00_000_00_FaceEyeline_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/14.3500_N00_000_00_EyeHighlight_00_EYE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/14.3500_N00_000_00_EyeHighlight_00_EYE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/15.3500_N00_000_00_EyeHighlight_00_EYE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/15.3500_N00_000_00_EyeHighlight_00_EYE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/15.4000_N00_000_00_FaceBrow_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/15.4000_N00_000_00_FaceBrow_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/16.4000_N00_000_00_FaceBrow_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/16.4000_N00_000_00_FaceBrow_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/16.4500_N00_000_00_FaceEyelash_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/16.4500_N00_000_00_FaceEyelash_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/17.4500_N00_000_00_FaceEyelash_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/17.4500_N00_000_00_FaceEyelash_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/2.2450_N00_000_00_Face_00_SKIN (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/2.2450_N00_000_00_Face_00_SKIN (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/3.2450_N00_000_00_FaceMouth_00_FACE (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/3.2450_N00_000_00_FaceMouth_00_FACE (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/4.2450_N00_000_00_HairBack_00_HAIR (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/4.2450_N00_000_00_HairBack_00_HAIR (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/5.2450_N00_000_Hair_00_HAIR (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/5.2450_N00_000_Hair_00_HAIR (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/5.2450_N00_000_Hair_00_HAIR_01 (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/5.2450_N00_000_Hair_00_HAIR_01 (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/6.2450_N00_000_Hair_00_HAIR_02 (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/6.2450_N00_000_Hair_00_HAIR_02 (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/6.2450_N00_001_01_Bottoms_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/6.2450_N00_001_01_Bottoms_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/7.2450_N00_001_01_Shoes_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/7.2450_N00_001_01_Shoes_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/7.2450_N00_004_01_Shoes_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/7.2450_N00_004_01_Shoes_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/8.2450_N00_001_03_Bottoms_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/8.2450_N00_001_03_Bottoms_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/8.2450_N00_007_01_Accessory_Tie_01_CLOTH (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/8.2450_N00_007_01_Accessory_Tie_01_CLOTH (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/9.2450_N00_007_01_Tops_01_CLOTH_01 (Instance).mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/9.2450_N00_007_01_Tops_01_CLOTH_01 (Instance).mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Model/New Material.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Model/New Material.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Model/Sky.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Model/Sky.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/qrcode.png" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/qrcode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Game.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Game.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/MatcapWarp.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/MatcapWarp.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/Shader_NoneBlack.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/Shader_NoneBlack.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_01.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_01.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_02.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_02.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_03.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_03.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_04.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_04.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_06.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_06.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_07.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_07.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_08.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_08.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_09.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_09.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_10.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_12.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_12.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_13.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_13.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_14.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_14.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_15.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_15.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_16.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_16.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_17.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_17.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_18.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_18.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_19.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/T_tex/_19.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.MMD4Mecanim.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.MMD4Mecanim.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.MMD4Mecanim.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.MMD4Mecanim.xml.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.controller" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.controller.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.extra.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.extra.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.fbx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.fbx.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.index.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.index.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.model.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.model.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.pmx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.pmx.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.vertex.bytes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.vertex.bytes.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Teamin.xml.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/Editor/CheckBuildSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/Editor/CheckBuildSettings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/GameManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/GameUIBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/GameUIBuilder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/InputManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/InputManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/LobbyManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/LobbyManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/LobbyUIBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/LobbyUIBuilder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/NetworkManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/NetworkManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/scripts/NoteSpawner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/scripts/NoteSpawner.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="37DrZLqfks3Yp945qN78GOKr4E2" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "Rebasing main",
+    "last_opened_file_path": "C:/Users/user/Downloads/Rhythm_game (2)"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\user\Downloads\Rhythm_game (2)" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f8a8aac5-4202-4dbc-af8d-c28a84c6ad17" name="Changes" comment="" />
+      <created>1766448536740</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1766448536740</updated>
+    </task>
+    <servers />
+  </component>
+</project>

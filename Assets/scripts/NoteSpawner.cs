@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// 노트 스포너 (Game_first, Game_second 씬 모두 지원)
+/// </summary>
 public class NoteSpawner : MonoBehaviour
 {
     [Header("Note Settings")]
@@ -13,8 +16,7 @@ public class NoteSpawner : MonoBehaviour
     private int currentNoteIndex = 0;
 
     [Header("Timing")]
-    public float songPosition = 0f;
-    public float songBPM = 120f;
+    public float songBPM = 120f; // 기본 BPM (씬에 따라 조정)
     private bool isSpawning = false;
 
     private void Awake()
@@ -41,6 +43,12 @@ public class NoteSpawner : MonoBehaviour
 
     private void Start()
     {
+        // 씬에 따라 BPM 조정
+        if (GameManager.Instance != null && GameManager.Instance.isSecondScene)
+        {
+            songBPM = 128f; // Sodapop BPM
+        }
+        
         // 테스트용 비트맵 생성 (게임 시작 시 한 번만)
         GenerateTestBeatmap();
     }
@@ -48,8 +56,6 @@ public class NoteSpawner : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null || !GameManager.Instance.isPlaying || GameManager.Instance.isPaused) return;
-
-        songPosition += Time.deltaTime;
 
         if (isSpawning)
         {
@@ -70,9 +76,9 @@ public class NoteSpawner : MonoBehaviour
         while (currentNoteIndex < beatmap.notes.Count)
         {
             NoteData noteData = beatmap.notes[currentNoteIndex];
-            float spawnTime = noteData.time - 2f;
+            float spawnTime = noteData.time - 2f; // 노트가 판정선에 도달하기 2초 전에 생성
 
-            if (songPosition >= spawnTime)
+            if (GameManager.Instance.songPosition >= spawnTime)
             {
                 SpawnNote(noteData);
                 currentNoteIndex++;
@@ -114,14 +120,69 @@ public class NoteSpawner : MonoBehaviour
         if (beatmap == null) beatmap = new BeatmapData();
         beatmap.notes.Clear();
 
-        float currentTime = 2.0f;
-        for (int i = 0; i < 50; i++)
+        float beatInterval = 60f / songBPM; // 1박자당 시간
+        float currentTime = 2.0f; // 게임 시작 후 2초부터
+
+        // 씬에 따라 다른 패턴 생성
+        bool isSecondScene = GameManager.Instance != null && GameManager.Instance.isSecondScene;
+        
+        // [FIX] Generate notes for the full song duration
+        float songLength = 180f; // Default 3 mins if clip is null
+        if (GameManager.Instance != null && GameManager.Instance.gameMusic != null)
         {
-            int randomLane = Random.Range(0, 4);
-            beatmap.notes.Add(new NoteData { lane = randomLane, time = currentTime });
-            currentTime += 0.5f;
+            songLength = GameManager.Instance.gameMusic.length;
         }
-        Debug.Log("테스트 비트맵 생성 완료: 노트 50개");
+
+        if (isSecondScene)
+        {
+            // Game_second: Sodapop (Complex Pattern)
+            // Generate until song ends
+            int measures = Mathf.CeilToInt((songLength - 2.0f) / (beatInterval * 4f));
+            
+            for (int measure = 0; measure < measures; measure++)
+            {
+                for (int beat = 0; beat < 4; beat++)
+                {
+                    if (currentTime > songLength - 2.0f) break; // Stop before end
+
+                    if (Random.value > 0.5f)
+                    {
+                        int randomLane = Random.Range(0, 4);
+                        beatmap.notes.Add(new NoteData { 
+                            lane = randomLane, 
+                            time = currentTime + (beat * beatInterval) 
+                        });
+                    }
+                    
+                    if (Random.value > 0.75f)
+                    {
+                        int randomLane = Random.Range(0, 4);
+                        beatmap.notes.Add(new NoteData { 
+                            lane = randomLane, 
+                            time = currentTime + (beat * beatInterval) + (beatInterval * 0.5f) 
+                        });
+                    }
+                }
+                currentTime += beatInterval * 4f;
+            }
+        }
+        else
+        {
+            // Game_first: Regular Pattern
+            // Generate until song ends
+            while (currentTime < songLength - 5.0f) // Buffer at end
+            {
+                int randomLane = Random.Range(0, 4);
+                beatmap.notes.Add(new NoteData { lane = randomLane, time = currentTime });
+                currentTime += 0.5f; // Constant interval for now
+            }
+        }
+
+        // 시간순으로 정렬
+        beatmap.notes.Sort((a, b) => a.time.CompareTo(b.time));
+        
+        string sceneName = isSecondScene ? "Sodapop" : "Galaxias";
+        Debug.Log($"[NoteSpawner] {sceneName} 테스트 비트맵 생성 완료: 노트 {beatmap.notes.Count}개");
     }
 }
 

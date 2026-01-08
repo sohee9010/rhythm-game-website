@@ -3,24 +3,24 @@ using UnityEngine.UI;
 using TMPro;
 
 [RequireComponent(typeof(LobbyManager))]
-[ExecuteAlways] // 에디터에서도 스크립트가 돌아가게 함
+[ExecuteAlways] // ?�디?�에?�도 ?�크립트가 ?�아가�???
 public class LobbyUIBuilder : MonoBehaviour
 {
     [Header("Custom UI Images")]
-    public Sprite borderSprite; // 게임 테두리 (필요없으면 비워두세요)
-    public Sprite titleLogoSprite; // 타이틀 로고 이미지
-    public Sprite startButtonSprite; // 게임 시작 버튼 이미지
-    public Sprite quitButtonSprite; // 게임 종료 버튼 이미지
+    public Sprite borderSprite; // 게임 ?�두�?(?�요?�으�?비워?�세??
+    public Sprite titleLogoSprite; // ?�?��? 로고 ?��?지
+    public Sprite startButtonSprite; // 게임 ?�작 버튼 ?��?지
+    public Sprite quitButtonSprite; // 게임 종료 버튼 ?��?지
 
     [Header("UI Settings")]
-    public Vector2 logoSize = new Vector2(1100, 1100); // 로고 크기
-    public Vector2 startButtonSize = new Vector2(1000, 1000); // 시작 버튼 크기
-    public Vector2 quitButtonSize = new Vector2(1000, 1000); // 종료 버튼 크기
+    public Vector2 logoSize = new Vector2(1100, 1100); // 로고 ?�기
+    public Vector2 startButtonSize = new Vector2(1000, 1000); // ?�작 버튼 ?�기
+    public Vector2 quitButtonSize = new Vector2(1000, 1000); // 종료 버튼 ?�기
     
     [Header("UI Positions")]
-    public Vector2 logoPosition = Vector2.zero; // 로고 위치
-    public Vector2 startButtonPosition = new Vector2(0, -170); // 시작 버튼 위치
-    public Vector2 quitButtonPosition = new Vector2(0, -400); // 종료 버튼 위치
+    public Vector2 logoPosition = Vector2.zero; // 로고 ?�치
+    public Vector2 startButtonPosition = new Vector2(0, -170); // ?�작 버튼 ?�치
+    public Vector2 quitButtonPosition = new Vector2(0, -400); // 종료 버튼 ?�치
 
     private bool _isDirty = false;
 
@@ -28,19 +28,32 @@ public class LobbyUIBuilder : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            // NetworkManager 없으면 생성
-            if (Object.FindObjectOfType<NetworkManager>() == null)
+            // NetworkManager ?�으�??�성
+            if (Object.FindFirstObjectByType<NetworkManager>() == null)
             {
                 new GameObject("NetworkManager").AddComponent<NetworkManager>();
             }
 
             BuildUI();
 
-            // 초기 상태: 메인 메뉴 (Start 버튼 표시)
-            SetGameReady(true);
+            // [MODIFIED] ?��? ?�청?�로 ?�당 버튼??�??�널 강제 비활?�화
+            // 초기 ?�태: 메인 메뉴 (Start 버튼 ?�시) -> ?�거
+            // SetGameReady(true);
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            if (canvas != null)
+            {
+                 GameObject startBtn = FindChild(canvas.gameObject, "StartButton");
+                 if (startBtn != null) startBtn.SetActive(false); // ?�성??X -> 비활?�화
 
-            // 이벤트 연결
-            NetworkManager net = Object.FindObjectOfType<NetworkManager>();
+                 GameObject quitBtn = FindChild(canvas.gameObject, "QuitButton");
+                 if (quitBtn != null) quitBtn.SetActive(false); // ?�성??X -> 비활?�화
+
+                 GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
+                 if (panel != null) panel.SetActive(false); // 비활?�화
+            }
+
+            // ?�벤???�결
+            NetworkManager net = Object.FindFirstObjectByType<NetworkManager>();
             if (net != null)
             {
                 net.OnConnected += OnClientConnected;
@@ -50,8 +63,8 @@ public class LobbyUIBuilder : MonoBehaviour
 
     private void OnClientConnected()
     {
-        // 연결되면 바로 시작하지 않고 카운트다운 시작
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        // ?�결?�면 바로 ?�작?��? ?�고 카운?�다???�작
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
         {
             GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
@@ -70,7 +83,7 @@ public class LobbyUIBuilder : MonoBehaviour
         GameObject txtObj = FindChild(card, "InfoText");
         TextMeshProUGUI txt = (txtObj != null) ? txtObj.GetComponent<TextMeshProUGUI>() : null;
         
-        // QR 코드 이미지는 숨기기 (깔끔하게)
+        // QR 코드 ?��?지???�기�?(깔끔?�게)
         GameObject qrObj = FindChild(card, "QRCode");
         if (qrObj != null) qrObj.SetActive(false);
 
@@ -92,117 +105,52 @@ public class LobbyUIBuilder : MonoBehaviour
 
     public void OnStartButtonClicked()
     {
-        Debug.Log("[LobbyUIBuilder] Start Button Clicked! (Immedate Start)"); // [DEBUG]
-        // [FIX] 사용자 요청으로 바로 시작 (QR 코드 건너뜀)
-        GetComponent<LobbyManager>().StartGame();
-
-        /* 원래 로직 (QR 코드/연결 대기)
-        SetGameReady(false);
-        ReloadQRCode();
-        */
-    }
-
-    private void ReloadQRCode()
-    {
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
-        if (canvas != null)
+        NetworkManager net = NetworkManager.Instance;
+        if (net != null && net.isConnected)
         {
-            GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
-            if (panel != null)
-            {
-                Transform cardTrans = panel.transform.Find("CardBackground");
-                if (cardTrans != null)
-                {
-                    Transform qrTrans = cardTrans.Find("QRCode");
-                    if (qrTrans != null)
-                    {
-                        RawImage qrImg = qrTrans.GetComponent<RawImage>();
-                        if (qrImg != null)
-                        {
-                            // [FIX] Resources.Load를 우선 사용하고, 파일 시스템은 보조로 사용
-                            Texture2D tex = Resources.Load<Texture2D>("qrcode");
-                            if (tex != null)
-                            {
-                                qrImg.texture = tex;
-                                Debug.Log("QR Code Reloaded from Resources");
-                            }
-                            else
-                            {
-                                // Resources에 없으면 파일 시스템 확인 (에디터 환경 등)
-                                string path = System.IO.Path.Combine(Application.dataPath, "Resources", "qrcode.png");
-                                if (System.IO.File.Exists(path))
-                                {
-                                    byte[] bytes = System.IO.File.ReadAllBytes(path); // This might be locked if resources loads it, but usually fine
-                                    tex = new Texture2D(2, 2);
-                                    tex.LoadImage(bytes);
-                                    qrImg.texture = tex;
-                                    Debug.Log("QR Code Reloaded from file system");
-                                }
-                                else
-                                {
-                                    Debug.LogWarning("QR Code file not found at " + path);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // ?��? ?�결?�어 ?�으�?바로 ?�작
+            GetComponent<LobbyManager>().StartGame();
+        }
+        else
+        {
+            // ?�결 ???�어 ?�으�?QR 코드 ?�널 ?�시
+            SetGameReady(false);
         }
     }
 
     private void SetGameReady(bool isReady)
     {
-        Debug.Log($"[LobbyUIBuilder] SetGameReady: {isReady}"); // [DEBUG]
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
-        if (canvas == null)
-        {
-            Debug.LogError("[LobbyUIBuilder] Canvas not found!");
-            return;
-        }
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
 
         GameObject startBtn = FindChild(canvas.gameObject, "StartButton");
         if (startBtn != null) startBtn.SetActive(isReady);
-        else Debug.LogError("[LobbyUIBuilder] StartButton not found!");
 
         GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
         if (panel != null) panel.SetActive(!isReady);
-        else Debug.LogError("[LobbyUIBuilder] ConnectionPanel not found!");
     }
 
     private void OnValidate()
     {
-        // 인스펙터에서 값이 바뀌면 갱신 예약
+        // ?�스?�터?�서 값이 바뀌면 갱신 ?�약
         _isDirty = true;
     }
 
     private void Update()
     {
-        // 에디터 모드일 때만, 값이 바뀌었으면 UI 다시 그리기
+        // ?�디??모드???�만, 값이 바뀌었?�면 UI ?�시 그리�?
         if (!Application.isPlaying && _isDirty)
         {
             _isDirty = false;
             BuildUI();
-        }
-        
-        // [DEBUG] 클릭 디버깅
-        if (Input.GetMouseButtonDown(0))
-        {
-            // EventSystem이 현재 마우스 위에 있는 UI를 감지하는지 확인
-            if (UnityEngine.EventSystems.EventSystem.current != null)
-            {
-                 GameObject selected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-                 // PointerOverGameObject는 모바일/터치에서는 ID 필요하지만 PC에서는 -1 or default
-                 bool isPointerOver = UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-                 Debug.Log($"[LobbyUIBuilder] MouseDown. PointerOverUI: {isPointerOver}");
-            }
         }
     }
 
     [ContextMenu("Build Lobby UI")]
     public void BuildUI()
     {
-        // 1. Canvas 찾기 또는 생성
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        // 1. Canvas 찾기 ?�는 ?�성
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
             GameObject canvasObj = new GameObject("Canvas");
@@ -216,31 +164,12 @@ public class LobbyUIBuilder : MonoBehaviour
             scaler.matchWidthOrHeight = 0.5f;
         }
 
-        // [FIX] GraphicRaycaster가 없으면 추가 (이게 없으면 클릭 안됨)
-        if (canvas.GetComponent<GraphicRaycaster>() == null)
+        // 1.5 EventSystem 찾기 ?�는 ?�성 (UI ?�릭 ?�수?�소)
+        if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
-            Debug.LogWarning("[LobbyUIBuilder] Missing GraphicRaycaster! Adding one.");
-            canvas.gameObject.AddComponent<GraphicRaycaster>();
-        }
-
-        // 1.5 EventSystem 찾기 또는 생성 (UI 클릭 필수요소)
-        UnityEngine.EventSystems.EventSystem es = Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
-        if (es == null)
-        {
-            Debug.Log("[LobbyUIBuilder] Creating EventSystem...");
             GameObject eventSystem = new GameObject("EventSystem");
-            es = eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
             eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-        }
-        else
-        {
-            Debug.Log("[LobbyUIBuilder] EventSystem found.");
-            // [FIX] 만약 StandaloneInputModule이 없으면 추가 (중요)
-            if (es.GetComponent<UnityEngine.EventSystems.StandaloneInputModule>() == null)
-            {
-                 Debug.LogWarning("[LobbyUIBuilder] EventSystem missing InputModule! Adding one.");
-                 es.gameObject.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-            }
         }
 
         // 2. 배경 (Panel)
@@ -260,7 +189,7 @@ public class LobbyUIBuilder : MonoBehaviour
         }
         bgObj.transform.SetAsFirstSibling();
 
-        // [NEW] 게임 테두리 (Border)
+        // [NEW] 게임 ?�두�?(Border)
         if (borderSprite != null)
         {
             GameObject borderObj = FindChild(canvas.gameObject, "GameBorder");
@@ -280,7 +209,7 @@ public class LobbyUIBuilder : MonoBehaviour
             }
         }
 
-        // [NEW] 3D 배경 생성
+        // [NEW] 3D 배경 ?�성
         Create3DBackground();
 
 #if UNITY_EDITOR
@@ -288,7 +217,7 @@ public class LobbyUIBuilder : MonoBehaviour
         MakeTextureReadable(quitButtonSprite);
 #endif
 
-        // 3. 타이틀 (Text or Logo Image)
+        // 3. ?�?��? (Text or Logo Image)
         GameObject titleObj = FindChild(canvas.gameObject, "TitleText");
         if (titleObj == null)
         {
@@ -311,7 +240,7 @@ public class LobbyUIBuilder : MonoBehaviour
             
             img.sprite = titleLogoSprite;
             img.preserveAspect = true; 
-            // 사이즈 설정 (사용자 지정)
+            // ?�이�??�정 (?�용??지??
             titleObj.GetComponent<RectTransform>().sizeDelta = logoSize; 
             titleObj.GetComponent<RectTransform>().anchoredPosition = logoPosition;
         }
@@ -323,7 +252,7 @@ public class LobbyUIBuilder : MonoBehaviour
             TextMeshProUGUI txt = titleObj.GetComponent<TextMeshProUGUI>();
             if (txt == null) txt = titleObj.AddComponent<TextMeshProUGUI>();
             
-            txt.text = "MOTION\nRHYTHM GAME"; 
+            txt.text = "STEP UP"; 
             txt.fontSize = 80;
             txt.alignment = TextAlignmentOptions.Center;
             txt.color = new Color(0f, 1f, 1f); 
@@ -348,20 +277,25 @@ public class LobbyUIBuilder : MonoBehaviour
             titleObj.GetComponent<RectTransform>().anchoredPosition = logoPosition;
         }
 
-        // [NEW] 연결 대기 화면 (QR 코드)
-        CreateConnectionPanel(canvas.transform);
+        // [MODIFIED] ?��? ?�청?�로 ?�동 ?�성 비활?�화
+        // [NEW] ?�결 ?��??�면 (QR 코드) -> ?�동 ?�성 ??
+        // CreateConnectionPanel(canvas.transform);
 
-        // 4. 시작 버튼 (이미지 지원, 사이즈/위치 조절 가능)
+        // 4. ?�작 버튼 (?��?지 지?? ?�이�??�치 조절 가?? -> ?�동 ?�성 ??
+        /*
         CreateButton(canvas.transform, "StartButton", "START GAME", startButtonPosition, new Color(0.2f, 0.2f, 0.2f), new Color(0f, 1f, 0.5f), startButtonSprite, startButtonSize, () => {
             OnStartButtonClicked();
         });
+        */
 
-        // 5. 종료 버튼 (이미지 지원, 사이즈/위치 조절 가능)
+        // 5. 종료 버튼 (?��?지 지?? ?�이�??�치 조절 가?? -> ?�동 ?�성 ??
+        /*
         CreateButton(canvas.transform, "QuitButton", "EXIT", quitButtonPosition, new Color(0.2f, 0.2f, 0.2f), new Color(1f, 0.2f, 0.5f), quitButtonSprite, quitButtonSize, () => {
             GetComponent<LobbyManager>().QuitGame();
         });
+        */
         
-        // 카메라 파랄랙스 효과
+        // 카메???�랄?�스 ?�과
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
@@ -382,7 +316,7 @@ public class LobbyUIBuilder : MonoBehaviour
             panelObj = new GameObject("ConnectionPanel");
             panelObj.transform.SetParent(parent, false);
             
-            // 1. 전체 화면 배경 (어두운 반투명)
+            // 1. ?�체 ?�면 배경 (?�두??반투�?
             Image img = panelObj.AddComponent<Image>();
             img.color = new Color(0, 0, 0, 0.9f);
             
@@ -392,22 +326,22 @@ public class LobbyUIBuilder : MonoBehaviour
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // 2. 카드 배경 (중앙 정렬)
+            // 2. 카드 배경 (중앙 ?�렬)
             GameObject cardObj = new GameObject("CardBackground");
             cardObj.transform.SetParent(panelObj.transform, false);
             Image cardImg = cardObj.AddComponent<Image>();
-            cardImg.color = new Color(0.15f, 0.15f, 0.2f, 1f); // 다크 블루 그레이
+            cardImg.color = new Color(0.15f, 0.15f, 0.2f, 1f); // ?�크 블루 그레??
             
-            // 둥근 모서리 효과 (Outline 컴포넌트로 대체하거나 스프라이트 필요, 여기선 색상만)
-            if (borderSprite != null) cardImg.sprite = borderSprite; // 테두리 스프라이트 재활용 가능하면 사용
+            // ?�근 모서�??�과 (Outline 컴포?�트�??�체하거나 ?�프?�이???�요, ?�기???�상�?
+            if (borderSprite != null) cardImg.sprite = borderSprite; // ?�두�??�프?�이???�활??가?�하�??�용
 
             RectTransform cardRt = cardObj.GetComponent<RectTransform>();
             cardRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardRt.anchorMax = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(800, 900); // 카드 크기
+            cardRt.sizeDelta = new Vector2(800, 900); // 카드 ?�기
             cardRt.anchoredPosition = Vector2.zero;
 
-            // 3. QR 코드 이미지
+            // 3. QR 코드 ?��?지
             GameObject qrObj = new GameObject("QRCode");
             qrObj.transform.SetParent(cardObj.transform, false);
             RawImage qrImg = qrObj.AddComponent<RawImage>();
@@ -425,7 +359,7 @@ public class LobbyUIBuilder : MonoBehaviour
             }
             qrObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 50);
 
-            // 4. 안내 텍스트
+            // 4. ?�내 ?�스??
             GameObject txtObj = new GameObject("InfoText");
             txtObj.transform.SetParent(cardObj.transform, false);
             TextMeshProUGUI txt = txtObj.AddComponent<TextMeshProUGUI>();
@@ -439,7 +373,7 @@ public class LobbyUIBuilder : MonoBehaviour
             txtRt.anchoredPosition = new Vector2(0, 350);
             txtRt.sizeDelta = new Vector2(700, 100);
 
-            // 5. 서브 텍스트
+            // 5. ?�브 ?�스??
             GameObject subTxtObj = new GameObject("SubText");
             subTxtObj.transform.SetParent(cardObj.transform, false);
             TextMeshProUGUI subTxt = subTxtObj.AddComponent<TextMeshProUGUI>();
@@ -452,21 +386,14 @@ public class LobbyUIBuilder : MonoBehaviour
             subTxtRt.anchoredPosition = new Vector2(0, -250);
             subTxtRt.sizeDelta = new Vector2(700, 100);
 
-            // 7. 취소 버튼
+            // 6. 취소 버튼
             CreateButton(cardObj.transform, "CancelButton", "CANCEL", new Vector2(0, -380), new Color(0.3f, 0.3f, 0.3f), Color.white, null, new Vector2(300, 80), () => {
-                SetGameReady(true); // 다시 메인으로
+                SetGameReady(true); // ?�시 메인?�로
             });
-
-            // [FIX] 테스트용 버튼 제거 (사용자가 헷갈려함)
-            /*
-            CreateButton(cardObj.transform, "TestStartButton", "TEST START", new Vector2(0, -350), new Color(0.2f, 0.6f, 0.2f), Color.white, null, new Vector2(300, 80), () => {
-                GetComponent<LobbyManager>().StartGame();
-            });
-            */
         }
         else
         {
-            // 이미 존재하면 QR 코드 이미지만 갱신 시도
+            // ?��? 존재?�면 QR 코드 ?��?지�?갱신 ?�도
             Transform cardTrans = panelObj.transform.Find("CardBackground");
             if (cardTrans != null)
             {
@@ -477,13 +404,6 @@ public class LobbyUIBuilder : MonoBehaviour
                     Texture2D qrTex = Resources.Load<Texture2D>("qrcode");
                     if (qrTex != null) qrImg.texture = qrTex;
                 }
-
-                // [FIX] 이미 패널이 있어도 버튼이 없으면 생성하지 않음 (TestStartButton 제거)
-                /*
-                CreateButton(cardTrans, "TestStartButton", "TEST START", new Vector2(0, -350), new Color(0.2f, 0.6f, 0.2f), Color.white, null, new Vector2(300, 80), () => {
-                    GetComponent<LobbyManager>().StartGame();
-                });
-                */
             }
         }
     }
@@ -498,13 +418,13 @@ public class LobbyUIBuilder : MonoBehaviour
             
             Image img = btnObj.AddComponent<Image>();
             
-            // 이미지가 있으면 이미지 사용, 없으면 색상 사용
+            // ?��?지가 ?�으�??��?지 ?�용, ?�으�??�상 ?�용
             if (sprite != null)
             {
                 img.sprite = sprite;
-                img.color = Color.white; // 이미지가 있으면 흰색(원본색)
+                img.color = Color.white; // ?��?지가 ?�으�??�색(?�본??
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 다시 활성화 (버튼 겹침 방지)
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?�명??부�??�릭 무시
             }
             else
             {
@@ -513,7 +433,7 @@ public class LobbyUIBuilder : MonoBehaviour
 
             Button btn = btnObj.AddComponent<Button>();
 
-            // 텍스트 (이미지가 없을 때만 생성)
+            // ?�스??(?��?지가 ?�을 ?�만 ?�성)
             GameObject txtObj = FindChild(btnObj, "Text");
             if (sprite == null)
             {
@@ -537,14 +457,14 @@ public class LobbyUIBuilder : MonoBehaviour
             }
             else
             {
-                // 이미지가 있는데 텍스트 오브젝트가 남아있으면 삭제 (깔끔하게)
+                // ?��?지가 ?�는???�스???�브?�트가 ?�아?�으�???�� (깔끔?�게)
                 if (txtObj != null) DestroyImmediate(txtObj);
             }
 
             RectTransform rt = btnObj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f); 
             rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = size; // 사용자 지정 사이즈 적용
+            rt.sizeDelta = size; // ?�용??지???�이�??�용
             rt.anchoredPosition = position;
             
             ColorBlock colors = btn.colors;
@@ -566,7 +486,7 @@ public class LobbyUIBuilder : MonoBehaviour
         }
         else
         {
-            // 이미 존재할 때 업데이트 로직
+            // ?��? 존재?????�데?�트 로직
             Image img = btnObj.GetComponent<Image>();
             GameObject txtObj = FindChild(btnObj, "Text");
 
@@ -575,29 +495,29 @@ public class LobbyUIBuilder : MonoBehaviour
                 img.sprite = sprite;
                 img.color = Color.white;
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] 다시 활성화 (버튼 겹침 방지)
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?�명??부�??�릭 무시
                 if (txtObj != null) DestroyImmediate(txtObj);
             }
             
-            // 사이즈 업데이트
+            // ?�이�??�데?�트
             RectTransform rt = btnObj.GetComponent<RectTransform>();
             if (rt != null) 
             {
                 rt.sizeDelta = size;
-                rt.anchoredPosition = position; // [FIX] 위치도 같이 업데이트
+                rt.anchoredPosition = position; // [FIX] ?�치??같이 ?�데?�트
             }
 
-            // 그림자/아웃라인 제거 (깔끔하게)
+            // 그림???�웃?�인 ?�거 (깔끔?�게)
             Shadow shadow = btnObj.GetComponent<Shadow>();
             if (shadow != null) DestroyImmediate(shadow);
             Outline outline = btnObj.GetComponent<Outline>();
             if (outline != null) DestroyImmediate(outline);
             
-            // 런타임 리스너 재연결
+            // ?��???리스???�연�?
             Button btn = btnObj.GetComponent<Button>();
             if (btn != null)
             {
-                // [FIX] 버튼 색상 상태도 같이 업데이트해야 함
+                // [FIX] 버튼 ?�상 ?�태??같이 ?�데?�트?�야 ??
                 ColorBlock colors = btn.colors;
                 if (sprite != null)
                 {
@@ -608,8 +528,8 @@ public class LobbyUIBuilder : MonoBehaviour
                 }
                 else
                 {
-                    // 이미지가 없으면 배경색 사용 (기존 로직 유지 또는 업데이트)
-                    // 여기서는 굳이 건드리지 않아도 되지만, 확실하게 하려면 업데이트
+                    // ?��?지가 ?�으�?배경???�용 (기존 로직 ?��? ?�는 ?�데?�트)
+                    // ?�기?�는 굳이 건드리�? ?�아???��?�? ?�실?�게 ?�려�??�데?�트
                 }
                 btn.colors = colors;
 
@@ -618,31 +538,25 @@ public class LobbyUIBuilder : MonoBehaviour
             }
         }
         
-        // 안전장치
+        // ?�전?�치
         Button buttonComponent = btnObj.GetComponent<Button>();
         if (buttonComponent != null)
         {
             buttonComponent.onClick.RemoveAllListeners();
             buttonComponent.onClick.AddListener(action);
         }
-
-        // [FIX] 버튼이 다른 UI에 가려지지 않도록 맨 앞으로 가져오기
-        if (btnObj != null)
-        {
-            btnObj.transform.SetAsLastSibling();
-        }
     }
 
     private void Create3DBackground()
     {
-        // 기존에 생성된 3D 배경이 있다면 삭제 (학교 모델을 넣기 위해 비워둠)
+        // 기존???�성??3D 배경???�다�???�� (?�교 모델???�기 ?�해 비워??
         GameObject oldBg = GameObject.Find("Background3D");
         if (oldBg != null)
         {
             DestroyImmediate(oldBg);
         }
         
-        // 여기에 school.fbx를 배치하시면 됩니다!
+        // ?�기??school.fbx�?배치?�시�??�니??
     }
 
     private GameObject FindChild(GameObject parent, string name)

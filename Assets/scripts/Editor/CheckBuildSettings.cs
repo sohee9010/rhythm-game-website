@@ -12,7 +12,6 @@ public class CheckBuildSettings
         foreach(var s in scenes) Debug.Log($"{s.path} (Enabled: {s.enabled})");
 
         string lobbyPath = "Assets/Scenes/Lobby.unity";
-        string gamePath = "Assets/Scenes/Game.unity"; // Verify exact path
 
         // Check if Lobby is first
         if (scenes.Count > 0 && scenes[0].path != lobbyPath)
