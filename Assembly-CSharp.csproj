@@ -110,10 +110,7 @@
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Tess-NoShadowCasting-BothFaces-Transparent.shader" />
     <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics\x86\MMD4MecanimBulletPhysics.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
-<<<<<<< HEAD
-=======
     <None Include="Assets\SodaPop\Yena\Yena.xml" />
->>>>>>> 484adf0f (UI/UX improvements: MENTAL gauge, transparent neon notes, score background, shrink-explode effect)
     <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics\WSA\X86\MMD4MecanimBulletPhysics.dll" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Tess.shader" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-NEXTEdge-ForwardBase.cginc" />
@@ -135,17 +132,11 @@
     <None Include="Assets\Minwoo\Minwoo_1.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Tess-NoShadowCasting-Transparent.shader" />
-<<<<<<< HEAD
-    <None Include="Assets\Teamin.MMD4Mecanim.xml" />
-    <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics\WSA\X64\MMD4MecanimBulletPhysics.dll" />
-    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-=======
     <None Include="Assets\SodaPop\Yena\Yena.MMD4Mecanim.xml" />
     <None Include="Assets\SodaPop\Abby\Jiwoon.xml" />
     <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics\WSA\X64\MMD4MecanimBulletPhysics.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\SodaPop\Minwoo\Minwoo2.MMD4Mecanim.xml" />
->>>>>>> 484adf0f (UI/UX improvements: MENTAL gauge, transparent neon notes, score background, shrink-explode effect)
     <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics 2.75\WSA\X86\MMD4MecanimBulletPhysics.dll" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Surface-Tessellation.cginc" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Surface-ShadowCaster.cginc" />
@@ -155,10 +146,6 @@
     <None Include="Assets\SodaPop\Mina\minA_1.xml" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Tess-Edge.shader" />
     <None Include="Assets\MMD4Mecanim\Plugins\MMD4MecanimBulletPhysics 2.75\WSA\ARM\MMD4MecanimBulletPhysics.dll" />
-<<<<<<< HEAD
-    <None Include="Assets\Lina.MMD4Mecanim.xml" />
-=======
->>>>>>> 484adf0f (UI/UX improvements: MENTAL gauge, transparent neon notes, score background, shrink-explode effect)
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-NEXTEdge-Lighting.cginc" />
     <None Include="Assets\SodaPop\Mina\minA_1.MMD4Mecanim.xml" />
     <None Include="Assets\SodaPop\Abby\Jiwoon.MMD4Mecanim.xml" />
@@ -168,7 +155,6 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-NEXTEdge-Pass4.shader" />
-    <None Include="Assets\Lina.xml" />
     <None Include="Assets\MMD4Mecanim\Shaders\MMD4Mecanim-MMDLit-Tess-NoShadowCasting-BothFaces-Transparent-Edge.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />

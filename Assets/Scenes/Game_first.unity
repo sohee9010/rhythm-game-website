@@ -3692,7 +3692,7 @@ MonoBehaviour:
   songTitles:
   - GALAXIAS!
   - Sodapop
-  resultBgColor: {r: 0.101960786, g: 0.10980392, b: 0.17254902, a: 0.74509805}
+  resultBgColor: {r: 0.112451054, g: 0.14770356, b: 0.1792453, a: 0.7607843}
   retryBtnColor: {r: 0.36078432, g: 0.4745098, b: 0.6117647, a: 0.78431374}
   mainBtnColor: {r: 0.2247241, g: 0.3380892, b: 0.4716981, a: 0.78431374}
   isPlaying: 0
@@ -3703,6 +3703,7 @@ MonoBehaviour:
   maxHp: 100
   currentHp: 0
   hpDecreaseAmount: 10
+  mentalGaugeColor: {r: 0.5582948, g: 0.9027772, b: 0.9622642, a: 0.7529412}
   hpBarFill: {fileID: 0}
   hpNumericText: {fileID: 0}
   scoreText: {fileID: 0}
@@ -3710,11 +3711,12 @@ MonoBehaviour:
   gameOverPanel: {fileID: 0}
   finalScoreText: {fileID: 0}
   inGameRankGaugeFill: {fileID: 0}
+  timerText: {fileID: 0}
   musicSources: []
   sfxSource: {fileID: 0}
   gameMusic: {fileID: 8300000, guid: 1885a067a40428041b9b88c7f4391b9e, type: 3}
-  galaxiasMusic: {fileID: 0}
-  sodapopMusic: {fileID: 0}
+  galaxiasMusic: {fileID: 8300000, guid: 909f3d4da6c7f6a478afbd88dfb0faa2, type: 3}
+  sodapopMusic: {fileID: 8300000, guid: c6be14bd5a1e2b74e88c2cfd4c67d855, type: 3}
   perfectCount: 0
   greatCount: 0
   badCount: 0
@@ -3757,6 +3759,8 @@ MonoBehaviour:
     bpm: 0
     notes: []
   songBPM: 120
+  bubbleSpawnerReference: {fileID: 0}
+  noteMaterials: []
 --- !u!1 &533500553 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7298796435282903268, guid: 98d7f2bee158fb84a9274ca0e478c097, type: 3}
@@ -6821,6 +6825,8 @@ MonoBehaviour:
     - lane: 2
       time: 5
   songBPM: 120
+  bubbleSpawnerReference: {fileID: 0}
+  noteMaterials: []
 --- !u!4 &961680724
 Transform:
   m_ObjectHideFlags: 0
@@ -9182,7 +9188,7 @@ MonoBehaviour:
   yRange: {x: 10, y: 20}
   fixedZ: 10
   lifeTime: 2
-  spawnDensity: 0.6
+  spawnDensity: 0.2
   beatmap:
     songName: 
     bpm: 0

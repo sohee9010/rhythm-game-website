@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
     public float maxHp = 100f;           // 최대 체력
     public float currentHp;              // 현재 체력
     public float hpDecreaseAmount = 10f; // 놓쳤을 때 감소량
+    public Color mentalGaugeColor = new Color(0.15f, 0.6f, 0.95f); // [NEW] Customizable Mental Gauge Color
     public Image hpBarFill;              // [NEW] HP Bar Fill Image
     public TextMeshProUGUI hpNumericText; // [NEW] HP Numeric Display (e.g., "100 / 100")
     // public Slider hpSlider; // Removed
@@ -46,9 +47,10 @@ public class GameManager : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI comboText;
-    public GameObject gameOverPanel;
+    public GameObject gameOverPanel; // [FIX] Restored
     public TextMeshProUGUI finalScoreText;
     public Image inGameRankGaugeFill; // [NEW] In-Game Gauge UI Reference
+    public TextMeshProUGUI timerText; // [NEW] Timer Text Reference (Updated to TMP)
 
     [Header("Audio")]
     public List<AudioSource> musicSources = new List<AudioSource>(); 
@@ -137,8 +139,93 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        Debug.Log($"[GameManager] OnSceneLoaded: {scene.name}");
+        
+        // 1. Clean up legacy/orphan UI first
+        CleanupLegacyUI();
+
+        // 2. Check if we are in a Lobby or Main Menu scene
+        // Contains("Lobby") or "Main" covers likely names (SchoolLobby, MainMenu, etc.)
+        if (scene.name.Contains("Lobby") || scene.name.Contains("Main"))
+        {
+            Debug.Log("[GameManager] Lobby/Main Scene loaded. Stopping Game & Cleaning UI.");
+            
+            isPlaying = false;
+            
+            // [FIX] Explicitly destroy ALL Game UI elements that might have leaked
+            GameObject[] uiToDelete = {
+                GameObject.Find("GameOverPanel"),
+                GameObject.Find("HPBarContainer"),
+                GameObject.Find("RankGaugeContainer"),
+                GameObject.Find("ScoreContainer"),
+                GameObject.Find("TimerText"),
+                GameObject.Find("ScoreText"),
+                GameObject.Find("PauseMenuPanel"),
+                // [FIX] Add Combo UI elements
+                GameObject.Find("ComboText"),
+                GameObject.Find("ComboNum"),
+                GameObject.Find("ComboDisplay") 
+            };
+
+            foreach (var obj in uiToDelete)
+            {
+                if (obj != null) 
+                {
+                    Debug.Log($"[GameManager] Destroying leaked Game UI in Lobby: {obj.name}");
+                    Destroy(obj);
+                }
+            }
+            
+            return; // STOP HERE! Do not StartGame()
+        }
+
+        // 3. Game Scene Logic (Only if NOT Lobby)
+        Debug.Log("[GameManager] Game Scene loaded. Initializing Game.");
+        
+        // Reset State for new round
+        score = 0; combo = 0; currentHp = maxHp;
+        perfectCount = 0; greatCount = 0; badCount = 0; missCount = 0;
+        
+        // Cleanup old GameOverPanel reference
+        if (gameOverPanel != null) 
+        {
+             Destroy(gameOverPanel); 
+             gameOverPanel = null;
+        }
+
+        // Re-initialize UI details
+        if (scoreText != null)
+        {
+            scoreText.enableVertexGradient = true;
+            scoreText.colorGradient = new VertexGradient(
+                new Color(0.8f, 1f, 1f), new Color(0.8f, 1f, 1f), 
+                new Color(0f, 0.5f, 1f), new Color(0f, 0.5f, 1f)
+            );
+            scoreText.outlineWidth = 0.2f;
+            scoreText.outlineColor = new Color(0, 0, 0, 0.8f);
+        }
+
+        // Trigger StartGame logic ONLY for game scenes
+        StartGame();
+    }
+
     private void Start()
     {
+        // [FIX] Cleanup Legacy UI (Green Score, etc.) immediately
+        CleanupLegacyUI();
+
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
         currentHp = maxHp; // Init HP
         UpdateUI();
@@ -190,6 +277,52 @@ public class GameManager : MonoBehaviour
         StartGame(); 
     }
 
+    // [FIX] Robust UI Cleanup to remove "Green Score" or other artifacts
+    private void CleanupLegacyUI()
+    {
+        // 1. Find all TextMeshProUGUI objects
+        TextMeshProUGUI[] allTmp = FindObjectsOfType<TextMeshProUGUI>();
+        foreach(var t in allTmp)
+        {
+            // Skip the active ScoreText we are using
+            if (scoreText != null && t.gameObject == scoreText.gameObject) continue;
+            
+            // Skip FinalScoreText (Result Screen)
+            if (finalScoreText != null && t.gameObject == finalScoreText.gameObject) continue;
+
+            // Check for "SCORE" or "COMBO" in text or name
+            string tText = (t.text ?? "").ToUpper();
+            string tName = t.name.ToUpper();
+            
+            if (tText.Contains("SCORE") || tName.Contains("SCORE") || 
+                tText.Contains("COMBO") || tName.Contains("COMBO"))
+            {
+                // Safety: Don't kill GameOverPanel children if they are valid
+                if (t.transform.root.name.Contains("GameOver")) continue;
+                
+                // Safety: Don't kill our "ScoreText" inside "ScoreContainer" if referencing failed matches
+                if (t.transform.parent != null && t.transform.parent.name == "ScoreContainer") continue;
+
+                Debug.Log($"[GameManager] Removing LEGACY/DUPLICATE UI: {t.name} (Text: {t.text})");
+                t.gameObject.SetActive(false);
+                Destroy(t.gameObject); // Destroy the object
+            }
+        }
+        
+        // 2. Check Legacy Text (UnityEngine.UI.Text)
+        Text[] allTxt = FindObjectsOfType<Text>();
+        foreach(var t in allTxt)
+        {
+            string tText = (t.text ?? "").ToUpper();
+            if (tText.Contains("SCORE") || tText.Contains("COMBO"))
+            {
+                 Debug.Log($"[GameManager] Removing LEGACY Text UI: {t.name}");
+                 t.gameObject.SetActive(false);
+                 Destroy(t.gameObject);
+            }
+        }
+    }
+
     // [HELPER] Create a simple white sprite ensures Image.Type.Filled works
     private Sprite _whiteSprite;
     private Sprite GetWhiteSprite()
@@ -219,6 +352,18 @@ public class GameManager : MonoBehaviour
             currentHp = 0; // Clamp to 0
             EndGame(); // This sets isPlaying = false, so won't be called again
             return; // Don't process further
+        }
+        
+        // [FIX] Update Timer Every Frame (Smooth Countdown)
+        if (timerText != null && mainMusicSource != null && mainMusicSource.clip != null)
+        {
+             float remainingTime = mainMusicSource.clip.length - mainMusicSource.time;
+             if (remainingTime < 0) remainingTime = 0;
+             
+             int minutes = Mathf.FloorToInt(remainingTime / 60F);
+             int seconds = Mathf.FloorToInt(remainingTime - minutes * 60);
+             // Always show 2 digits
+             timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
         }
         
         // [DEBUG] Detect clicks on result screen
@@ -296,6 +441,22 @@ public class GameManager : MonoBehaviour
     {
         // Create HP Bar ONLY when game starts
         CreateHPBar();
+        
+        // [FIX] Create Score UI using GameUIBuilder
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas != null)
+        {
+            // [FIX] MonoBehaviour must be added via AddComponent, NOT new()
+            GameUIBuilder uiBuilder = gameObject.GetComponent<GameUIBuilder>();
+            if (uiBuilder == null) uiBuilder = gameObject.AddComponent<GameUIBuilder>();
+            
+            uiBuilder.CreateUI(canvas.transform, this);
+            Debug.Log("[GameManager] GameUIBuilder created Score UI");
+        }
+        else
+        {
+            Debug.LogError("[GameManager] No Canvas found for UI creation!");
+        }
         
         // Reset State
         score = 0; combo = 0; currentHp = maxHp;
@@ -1033,10 +1194,8 @@ public class GameManager : MonoBehaviour
     {
         if (scoreText != null) 
         {
-            // [FIX] SINGLE OBJECT STYLING
-            // SCORE = Gold (Multiplies with Silver Gradient -> Metallic Gold)
-            // Number = White (Multiplies with Silver Gradient -> Pure Silver)
-            scoreText.text = $"<color=#FFD700>SCORE</color>   <size=120%><color=#FFFFFF>{score:N0}</color></size>"; 
+            // [FIX] REMOVED Color Tags to preserver Metallic Silver Gradient
+            scoreText.text = $"SCORE   <size=120%>{score:N0}</size>"; 
         }
 
         
@@ -1049,8 +1208,8 @@ public class GameManager : MonoBehaviour
             float hpPercent = (float)currentHp / maxHp;
             hpBarFill.fillAmount = hpPercent;
             
-            // [FIX] Maintain Blue Color (softer than bright cyan)
-            hpBarFill.color = new Color(0.15f, 0.6f, 0.95f); // Softer blue
+            // [FIX] Apply color every frame so Inspector changes allow real-time editing
+            hpBarFill.color = mentalGaugeColor; 
             
             // Update Numeric Display
             if (hpNumericText != null)
@@ -1083,13 +1242,13 @@ public class GameManager : MonoBehaviour
 
             inGameRankGaugeFill.fillAmount = fill;
             
-            // Rank Color (Optional: Change bar color based on current projected rank?)
-            // Keep it simple or use accumulation color
+            // Rank Color
             if (fill >= 0.95f) inGameRankGaugeFill.color = new Color(1f, 0.8f, 0.2f); // S (Gold)
             else if (fill >= 0.85f) inGameRankGaugeFill.color = new Color(1f, 0.4f, 0.8f); // A (Pink)
             else if (fill >= 0.70f) inGameRankGaugeFill.color = new Color(0.2f, 0.6f, 1f); // B (Blue)
             else inGameRankGaugeFill.color = Color.gray; // C/Building
         }
+
     }
 
     public void RestartGame()
@@ -1275,19 +1434,33 @@ public class GameManager : MonoBehaviour
         GameObject barObj = new GameObject("HPBarContainer");
         barObj.transform.SetParent(canvas.transform, false);
         
+        // [FIX] Ensure CanvasScaler exists for consistent sizing across resolutions
+        UnityEngine.UI.CanvasScaler scaler = canvas.GetComponent<UnityEngine.UI.CanvasScaler>();
+        if (scaler == null) {
+            scaler = canvas.gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+        } else if (scaler.uiScaleMode == UnityEngine.UI.CanvasScaler.ScaleMode.ConstantPixelSize) {
+            // Force upgrade to Screen Size if it's default
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+        }
+
         RectTransform rt = barObj.AddComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 1f); // Top Center
         rt.anchorMax = new Vector2(0.5f, 1f);
         rt.pivot = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = new Vector2(0, -15); // Slight offset from top
-        rt.sizeDelta = new Vector2(500, 50); // Larger size
+        // [FIX] Move further down to avoid Score overlapping (was -80)
+        rt.anchoredPosition = new Vector2(0, -130); 
+        rt.sizeDelta = new Vector2(900, 40); // Thinner and longer
 
         // [LIFE LABEL - Modern Cyan Gradient]
         GameObject lblObj = new GameObject("LifeLabel");
         lblObj.transform.SetParent(barObj.transform, false);
         TextMeshProUGUI lbl = lblObj.AddComponent<TextMeshProUGUI>();
         lbl.text = "MENTAL";
-        lbl.fontSize = 28; // Larger font
+        lbl.fontSize = 26; // Adjusted for thinner bar
         lbl.fontStyle = FontStyles.Bold;
         lbl.alignment = TextAlignmentOptions.Center; // Center to prevent cutoff
         

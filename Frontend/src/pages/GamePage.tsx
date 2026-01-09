@@ -34,29 +34,26 @@ const GamePage: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen overflow-hidden bg-black p-4">
-            <h1 className="text-2xl text-white font-bold mb-2">Rhythm School</h1>
+            <h1 className="text-2xl text-white font-bold mb-2">Step up</h1>
             <div className="w-full max-w-[1280px] aspect-video relative group shadow-2xl">
                 <button
                     onClick={() => {
-                        console.log("Close button clicked");
-                        const gameWindow = iframeRef.current?.contentWindow as any;
-                        if (gameWindow) {
-                            console.log("Game window found");
-                            if (gameWindow.gameInstance) {
-                                console.log("Sending CANCEL message to Unity");
-                                gameWindow.gameInstance.SendMessage("NetworkManager", "ReceiveInput", "CANCEL");
-                            } else {
-                                console.warn("gameInstance not found in gameWindow");
+                        const iframe = iframeRef.current;
+                        if (iframe) {
+                            if (iframe.requestFullscreen) {
+                                iframe.requestFullscreen();
+                            } else if ((iframe as any).webkitRequestFullscreen) {
+                                (iframe as any).webkitRequestFullscreen();
+                            } else if ((iframe as any).msRequestFullscreen) {
+                                (iframe as any).msRequestFullscreen();
                             }
-                        } else {
-                            console.warn("Iframe contentWindow not found");
                         }
                     }}
-                    className="absolute top-4 right-4 z-20 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-sm"
-                    title="Close QR Code"
+                    className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-purple-600 text-white p-2 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-sm border border-white/20"
+                    title="Toggle Fullscreen"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                     </svg>
                 </button>
                 <iframe
