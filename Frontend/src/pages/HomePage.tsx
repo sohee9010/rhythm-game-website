@@ -20,14 +20,12 @@ const HomePage: React.FC = () => {
 
           {/* Logo removed as requested */}
 
-          <div className="mb-12 max-w-2xl mx-auto font-light tracking-wider">
-            <p className="text-2xl md:text-3xl text-gray-300">
-              비트를 느껴보세요
-            </p>
+          <p className="text-2xl md:text-3xl text-gray-300 mb-12 max-w-2xl mx-auto font-light tracking-wider">
+            FEEL THE BEAT <br />
             <span className="text-purple-400 font-bold mt-2 block neon-text text-4xl md:text-5xl">
-              몸을 움직이세요
+              PLAY THE RHYTHM
             </span>
-          </div>
+          </p>
 
           <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
 
@@ -38,7 +36,7 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-glow"></div>
               <div className="relative px-12 py-5 bg-black ring-1 ring-gray-600/50 rounded-full leading-none flex items-center">
                 <span className="space-x-2 text-gray-100 group-hover:text-purple-300 transition-colors duration-200">
-                  <span className="text-3xl font-bold tracking-widest">게임 시작</span>
+                  <span className="text-3xl font-bold tracking-widest">START GAME</span>
                 </span>
                 <svg className="w-8 h-8 ml-4 text-purple-400 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
@@ -62,7 +60,7 @@ const HomePage: React.FC = () => {
       <section id="features" className="py-32 relative z-10 bg-black/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white neon-text">게임 특징</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white neon-text">SYSTEM FEATURES</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto"></div>
           </div>
 
@@ -71,27 +69,27 @@ const HomePage: React.FC = () => {
             {/* Feature 1 */}
             <div className="neon-border p-8 bg-white/5 hover:bg-white/10 transition-all duration-300 group">
               <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">📱</div>
-              <h3 className="text-2xl font-bold mb-4 text-purple-300">별도 장비 불필요</h3>
+              <h3 className="text-2xl font-bold mb-4 text-purple-300">Wearable Free</h3>
               <p className="text-lg text-gray-400 font-light leading-relaxed">
-                <span className="text-cyan-400 font-semibold">스마트폰</span> 하나면 충분합니다. 고가의 센서나 장비 없이 당신의 휴대폰이 컨트롤러가 됩니다.
+                Just use your <span className="text-cyan-400 font-semibold">Smartphone</span>. It acts as your motion controller sensor. No expensive gear required.
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="neon-border p-8 bg-white/5 hover:bg-white/10 transition-all duration-300 group">
               <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🏃</div>
-              <h3 className="text-2xl font-bold mb-4 text-pink-300">실시간 모션 인식</h3>
+              <h3 className="text-2xl font-bold mb-4 text-pink-300">Real-time Motion</h3>
               <p className="text-lg text-gray-400 font-light leading-relaxed">
-                지연 없는 <span className="text-pink-400 font-semibold">실시간 동기화</span>를 경험하세요. 당신의 움직임이 즉시 화면에 반영됩니다.
+                Experience <span className="text-pink-400 font-semibold">Zero Latency</span> synchronization. Your physical moves are instantly reflected on screen.
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="neon-border p-8 bg-white/5 hover:bg-white/10 transition-all duration-300 group">
               <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🏆</div>
-              <h3 className="text-2xl font-bold mb-4 text-cyan-300">리듬 액션</h3>
+              <h3 className="text-2xl font-bold mb-4 text-cyan-300">Rhythm Action</h3>
               <p className="text-lg text-gray-400 font-light leading-relaxed">
-                노트를 치고, 멋진 포즈를 취하세요. <span className="text-cyan-400 font-semibold">글로벌 랭킹</span>에서 최고 점수에 도전하세요.
+                Hit the notes, strike the poses. Compete for the <span className="text-cyan-400 font-semibold">High Score</span> on our global leaderboard.
               </p>
             </div>
 
@@ -103,15 +101,15 @@ const HomePage: React.FC = () => {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 to-black z-0"></div>
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-5xl md:text-7xl font-bold mb-8 text-white neon-text">춤출 준비 되셨나요?</h2>
+          <h2 className="text-5xl md:text-7xl font-bold mb-8 text-white neon-text">READY TO DANCE?</h2>
           <p className="text-2xl text-gray-300 mb-12 font-light">
-            무대는 준비되었습니다. 음악이 당신을 기다립니다.
+            The stage is set. The music is waiting.
           </p>
           <Link
             to="/game"
             className="inline-block px-12 py-5 bg-white text-black text-2xl font-bold rounded-full hover:bg-purple-500 hover:text-white hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)]"
           >
-            지금 플레이
+            PLAY NOW
           </Link>
         </div>
       </section>
