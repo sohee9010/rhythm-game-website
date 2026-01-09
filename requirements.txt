@@ -1,5 +1,6 @@
-flask
-flask-socketio
-eventlet
-qrcode
-pillow
+flask==3.0.0
+flask-socketio==5.3.6
+eventlet==0.33.3
+qrcode==7.4.2
+pillow==10.0.0
+gunicorn==21.2.0
