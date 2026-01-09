@@ -19,6 +19,9 @@ public class NoteSpawner : MonoBehaviour
     public float songBPM = 120f; // 기본 BPM (씬에 따라 조정)
     private bool isSpawning = false;
 
+    // [FIX] Public Reference for Manual Assignment (Backup)
+    public BubbleSpawner bubbleSpawnerReference;
+
     private void Awake()
     {
         // [안전장치] SpawnPoints가 연결 안 되어 있으면 자동으로 찾기
@@ -87,17 +90,15 @@ public class NoteSpawner : MonoBehaviour
         }
     }
 
+    [Header("Note Visuals")]
+    public Material[] noteMaterials; // User can drag Glass 0-7 here
+
     private void SpawnNote(NoteData noteData)
     {
         if (noteData.lane < 0 || noteData.lane >= spawnPoints.Length) return;
 
         // [중요] 구멍이 비어있으면 에러 없이 넘어가는 안전장치
-        if (spawnPoints[noteData.lane] == null)
-        {
-            // 로그는 한 번만 뜨게 하거나 생략 가능하지만, 일단 놔둠
-            // Debug.LogError($"Lane {noteData.lane}의 위치(Spawn Point)가 비어있습니다!"); 
-            return;
-        }
+        if (spawnPoints[noteData.lane] == null) return;
 
         if (notePrefab == null)
         {
@@ -106,11 +107,26 @@ public class NoteSpawner : MonoBehaviour
         }
 
         GameObject noteObj = Instantiate(notePrefab, spawnPoints[noteData.lane].position, Quaternion.identity);
+        
+        // 1. Game Logic Init
         Note note = noteObj.GetComponent<Note>();
-
         if (note != null)
         {
             note.Initialize(noteData.lane, noteData.time, noteSpeed);
+        }
+
+        // 2. Visuals Init
+        BubbleNote bubble = noteObj.GetComponent<BubbleNote>();
+        if (bubble != null)
+        {
+            bubble.Initialize(2.0f); // Just init visuals
+
+            // Assign Random Material from Manager (NoteSpawner)
+            if (noteMaterials != null && noteMaterials.Length > 0)
+            {
+                Material randomMat = noteMaterials[Random.Range(0, noteMaterials.Length)];
+                bubble.SetMaterial(randomMat);
+            }
         }
     }
 
@@ -168,13 +184,23 @@ public class NoteSpawner : MonoBehaviour
         }
         else
         {
-            // Game_first: Regular Pattern
-            // Generate until song ends
+            // Game_first: Regular Pattern (Galaxias) -> [FIX] EXTREME EASY MODE
+            // Reduced density: Spawn every 2.0s
+            
+            float safeZone = 5.0f; // Seconds before song starts
+            currentTime = safeZone;
+
             while (currentTime < songLength - 5.0f) // Buffer at end
             {
-                int randomLane = Random.Range(0, 4);
-                beatmap.notes.Add(new NoteData { lane = randomLane, time = currentTime });
-                currentTime += 0.5f; // Constant interval for now
+                // Sparse spawning: 10% chance every 2.0 seconds
+                // Valid for absolute beginners
+                if (Random.value > 0.9f) 
+                {
+                    int randomLane = Random.Range(0, 4);
+                    beatmap.notes.Add(new NoteData { lane = randomLane, time = currentTime });
+                }
+                
+                currentTime += 2.0f; // Extremely Slow pace
             }
         }
 

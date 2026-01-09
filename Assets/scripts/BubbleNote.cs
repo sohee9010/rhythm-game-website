@@ -11,10 +11,15 @@ public class BubbleNote : MonoBehaviour
     private bool isHit = false;
 
     private int segments = 50;
+    public float xradius = 1.0f; 
+    public float yradius = 1.0f;
     private float startRadiusScale = 3.0f; 
 
     private Camera mainCamera;
     private static Texture2D softVideoLineTex; // Cached Texture
+
+    private float randomScaleFactor = 2.0f;
+    private Color noteColor = Color.white;
 
     public void Initialize(float lifeTime)
     {
@@ -23,72 +28,130 @@ public class BubbleNote : MonoBehaviour
         this.targetTime = spawnTime + lifeTime;
         
         mainCamera = Camera.main; 
+
+        // [FIX] Random Size (1.5x to 2.8x)
+        randomScaleFactor = Random.Range(1.8f, 3.0f);
+
+        // [FIX] Random Neon Color
+        // High Saturation (0.7-1.0), High Value (1.0) for Neon look
+        noteColor = Color.HSVToRGB(Random.value, Random.Range(0.7f, 1f), 1f);
+        noteColor.a = 0.8f; // Alpha
     }
 
+    private Renderer targetRenderer; // Visual to effect
+
+    // Revert to standard Start, remove Awake destruction
+    // Revert to standard Start, remove Awake destruction
     void Start()
     {
+        // 1. Setup Line Renderer (Ring) - NEON GLOW STYLE
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.useWorldSpace = false;
         
-        // [FIX] NEON GLOW GENERATION (Procedural Soft Texture)
+        // Defaults
+        if (segments < 10) segments = 50; 
+        if (xradius < 0.1f) xradius = 1.0f;
+        if (yradius < 0.1f) yradius = 1.0f;
+
+        // Draw Circle Geometry
+        lineRenderer.positionCount = segments + 1;
+        lineRenderer.loop = true; 
+
+        float lx, ly;
+        float angle = 0f;
+        for (int i = 0; i < (segments + 1); i++)
+        {
+            lx = Mathf.Sin(Mathf.Deg2Rad * angle) * xradius;
+            ly = Mathf.Cos(Mathf.Deg2Rad * angle) * yradius;
+
+            lineRenderer.SetPosition(i, new Vector3(lx, ly, 0));
+            angle += (360f / segments);
+        }
+
+        // [CRITICAL FIX] Restore "Glow" Texture
+        // We create a gradient that is SOLID in the absolute center but FADES OUT to create a "Halo"
         if (softVideoLineTex == null) {
-            softVideoLineTex = new Texture2D(1, 32);
-            for (int y = 0; y < 32; y++) {
-                // Bell Curve style fade (0 -> 1 -> 0)
-                float v = Mathf.Sin((y / 31f) * Mathf.PI); 
-                softVideoLineTex.SetPixel(0, y, new Color(1, 1, 1, v));
+            softVideoLineTex = new Texture2D(1, 128); // Higher resolution gradient
+            for (int k = 0; k < 128; k++) { 
+                // Normalized pos 0..1
+                float t = k / 127f; 
+                // Sin wave from 0 to PI (0 -> 1 -> 0)
+                float v = Mathf.Sin(t * Mathf.PI); 
+                // Power it to make it sharper (less "fat")
+                v = Mathf.Pow(v, 3.0f); 
+                
+                softVideoLineTex.SetPixel(0, k, new Color(1, 1, 1, v));
             }
             softVideoLineTex.Apply();
             softVideoLineTex.wrapMode = TextureWrapMode.Clamp;
         }
 
-        // 1. Thicker line to accommodate the fade
-        lineRenderer.startWidth = 0.4f; 
-        lineRenderer.endWidth = 0.4f;
+        // [FIX] Material Setup
+        var lineShader = Shader.Find("Particles/Additive");
+        if (lineShader == null) lineShader = Shader.Find("Mobile/Particles/Additive");
+        if (lineShader == null) lineShader = Shader.Find("Sprites/Default");
         
-        lineRenderer.positionCount = segments + 1;
+        Material ringMat = new Material(lineShader);
+        ringMat.mainTexture = softVideoLineTex;
         
-        // 2. Additive Shader + Soft Texture
-        var shader = Shader.Find("Particles/Additive");
-        if (shader == null) shader = Shader.Find("Mobile/Particles/Additive");
+        // Color: bright white with transparency to let the additive blend work its magic
+        ringMat.color = new Color(1f, 1f, 1f, 1f); 
+        lineRenderer.material = ringMat;
         
-        var mat = new Material(shader != null ? shader : Shader.Find("Sprites/Default"));
-        mat.mainTexture = softVideoLineTex; // Assign Soft Texture
-        lineRenderer.material = mat;
-        // [FIX] TRANSPARENT GLOWING CYAN VISUALS
-        var meshRenderer = GetComponent<Renderer>();
-        if (meshRenderer != null)
-        {
-            // Original Bright White-Cyan Color (as it was before)
-            Color cyanNeon = new Color(0.8f, 0.9f, 1f); // Brighter, more white
-            
-            // Create Transparent Glowing Material
-            var beadMat = new Material(Shader.Find("Standard"));
-            
-            // Enable Transparent Mode
-            beadMat.SetFloat("_Mode", 3); // Transparent
-            beadMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            beadMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            beadMat.SetInt("_ZWrite", 0);
-            beadMat.DisableKeyword("_ALPHATEST_ON");
-            beadMat.EnableKeyword("_ALPHABLEND_ON");
-            beadMat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            beadMat.renderQueue = 3000;
-            
-            // Set transparent base color (70% opacity - 조금 투명)
-            beadMat.color = new Color(cyanNeon.r, cyanNeon.g, cyanNeon.b, 0.7f);
-            
-            // Bright Emission for neon glow
-            beadMat.EnableKeyword("_EMISSION");
-            beadMat.SetColor("_EmissionColor", cyanNeon * 2.5f); // Bright cyan glow
-            beadMat.SetFloat("_Glossiness", 0.9f); // Shiny
-            
-            meshRenderer.material = beadMat;
-        }
+        // [CRITICAL FIX] Width: 0.5f
+        // Since the texture fades out at edges, this 0.5f will look like a 0.1f core with 0.2f glow on sides
+        lineRenderer.startWidth = 0.5f; 
+        lineRenderer.endWidth = 0.5f;
+        
+        // Default color (Blue-ish Cyan Glow)
+        Color neonColor = new Color(0.2f, 0.8f, 1f, 0.9f);
+        lineRenderer.startColor = neonColor;
+        lineRenderer.endColor = neonColor;
+        
+        lineRenderer.enabled = true;
 
-        // [FIX] Initial Scale 0 for Pop Animation
+        // 2. Setup Note Visuals (Sphere)
+        if (targetRenderer == null) targetRenderer = GetComponent<Renderer>();
+        if (targetRenderer == null) targetRenderer = gameObject.AddComponent<MeshRenderer>();
+        
+        // Soft Bubble Texture for Mesh
+        Texture2D sphereTex = new Texture2D(32, 32); // Use local var to ensure separation
+        for (int ty = 0; ty < 32; ty++) {
+            for (int tx = 0; tx < 32; tx++) {
+                float dx = tx - 15.5f;
+                float dy = ty - 15.5f;
+                float dist = Mathf.Sqrt(dx*dx + dy*dy) / 16f;
+                float alpha = Mathf.Clamp01(1f - dist);
+                alpha = Mathf.Pow(alpha, 0.5f); 
+                sphereTex.SetPixel(tx, ty, new Color(1, 1, 1, alpha));
+            }
+        }
+        sphereTex.Apply();
+
+        // [CRITICAL FIX] Alpha Blended Sphere (Transparent)
+        Shader safeShader = Shader.Find("Mobile/Particles/Alpha Blended");
+        if (safeShader == null) safeShader = Shader.Find("Particles/Alpha Blended");
+        if (safeShader == null) safeShader = Shader.Find("Sprites/Default");
+
+        Material sphereMat = new Material(safeShader);
+        sphereMat.mainTexture = sphereTex;
+        
+        // Apply Note Color with Transparency
+        Color finalColor = noteColor;
+        finalColor.a = 0.5f; // Slightly more transparent
+        sphereMat.color = finalColor;
+        
+        if (sphereMat.HasProperty("_TintColor"))
+            sphereMat.SetColor("_TintColor", finalColor);
+
+        targetRenderer.material = sphereMat;
+        targetRenderer.enabled = true;
+        
         transform.localScale = Vector3.zero;
     }
+
+    // Deprecated
+    public void SetMaterial(Material mat) { }
 
     private void Update()
     {
@@ -102,44 +165,40 @@ public class BubbleNote : MonoBehaviour
         float timeAlive = Time.time - spawnTime;
         float progress = timeAlive / lifeTime;
 
-        // [FIX] BUBBLE POP-IN ANIMATION
-        // Grow from 0 to 1 over first 0.4 seconds (or 20% of life)
+        // [FIX] BUBBLE POP-IN ANIMATION WITH RANDOM SCALE
         float popDuration = 0.4f; 
         if (timeAlive < popDuration)
         {
             float popT = timeAlive / popDuration;
-            // Elastic Ease Out for "Bubble" feel
-            // t = sin(13 * pi * 0.5 * t) * pow(2, 10 * (t - 1)) + 1 (Too complex?)
-            // Simple EaseOutBack: c1*t*t*t + c2*t + ...
-            // Let's stick to simple smoothstep or Lerp
-            transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one * 2.0f, Mathf.SmoothStep(0, 1, popT));
+            transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one * randomScaleFactor, Mathf.SmoothStep(0, 1, popT));
         }
         else
         {
-             transform.localScale = Vector3.one * 2.0f;
+             transform.localScale = Vector3.one * randomScaleFactor;
         }
 
         float timeRemaining = targetTime - Time.time;
+
         if (timeRemaining <= 0.5f)
         {
-            // [FIX] Sky Blue Neon Judgement Ring
-            // Changed from Green to Cyan/Sky Blue as requested
-            lineRenderer.startColor = new Color(0.2f, 0.9f, 1f, 0.9f); 
-            lineRenderer.endColor = new Color(0.2f, 0.9f, 1f, 0.9f);
+            // Judgment Ready: Cyan Pulse
+            // Keep it THICKER for GLOW (0.5f base)
+            Color readyColor = new Color(0.2f, 0.9f, 1f, 0.9f);
+            lineRenderer.startColor = readyColor; 
+            lineRenderer.endColor = readyColor;
             
-            // Pulse Effect
-            float pulse = Mathf.PingPong(Time.time * 8, 0.15f);
+            float pulse = Mathf.PingPong(Time.time * 8, 0.05f); 
             lineRenderer.startWidth = 0.5f + pulse; 
             lineRenderer.endWidth = 0.5f + pulse;
         }
         else
         {
-            // Approaching Ring - NEON STYLE
-            // White with transparency, but Additive shader makes it glow.
-            // Width is thick (0.35) to look like a light tube.
-            lineRenderer.startColor = new Color(0.8f, 0.9f, 1f, 0.5f); // Soft Cyan-ish White
-            lineRenderer.endColor = new Color(0.8f, 0.9f, 1f, 0.5f);
-            lineRenderer.startWidth = 0.35f; lineRenderer.endWidth = 0.35f;
+            // Normal: White and GLOWING (0.5f)
+            lineRenderer.startColor = new Color(1f, 1f, 1f, 0.8f);
+            lineRenderer.endColor = new Color(1f, 1f, 1f, 0.8f);
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
+            lineRenderer.enabled = true;
         }
 
         if (progress >= 1.0f)
