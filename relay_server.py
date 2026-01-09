@@ -7,6 +7,7 @@ import socket
 import qrcode
 import io
 import sys
+import os
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -88,7 +89,7 @@ def handle_pose(data):
 
 if __name__ == '__main__':
     all_ips = get_all_ips()
-    port = 5000
+    port = int(os.environ.get("PORT", 5000))
     primary_ip = all_ips[0]
     import time
     url = f"https://{primary_ip}:{port}?v={int(time.time())}"
@@ -128,5 +129,5 @@ if __name__ == '__main__':
         os.rename('ssl.crt', 'cert.pem')
         os.rename('ssl.key', 'key.pem')
 
-    print("Starting server with HTTPS...")
-    socketio.run(app, host='0.0.0.0', port=port, certfile='cert.pem', keyfile='key.pem')
+    print("Starting server with HTTP (No SSL)...")
+    socketio.run(app, host='0.0.0.0', port=port)
