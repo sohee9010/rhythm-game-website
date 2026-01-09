@@ -6,7 +6,7 @@ const GamePage: React.FC = () => {
 
     useEffect(() => {
         // SocketIO 연결
-        const socket = io("http://localhost:5000");
+        const socket = io("https://rhythm-game-website.onrender.com");
 
         socket.on("connect", () => {
             console.log("Connected to Relay Server via WebSocket");
