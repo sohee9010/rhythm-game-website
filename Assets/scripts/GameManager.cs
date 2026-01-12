@@ -164,6 +164,13 @@ public class GameManager : MonoBehaviour
             
             isPlaying = false;
             
+            // [FIX] Stop all music when returning to lobby
+            if (mainMusicSource != null && mainMusicSource.isPlaying)
+            {
+                mainMusicSource.Stop();
+                Debug.Log("[GameManager] Music stopped on lobby load");
+            }
+            
             // [FIX] Explicitly destroy ALL Game UI elements that might have leaked
             GameObject[] uiToDelete = {
                 GameObject.Find("GameOverPanel"),
@@ -591,6 +598,22 @@ public class GameManager : MonoBehaviour
     public void EndGame()
     {
         isPlaying = false;
+        
+        // [FIX] Stop all music immediately when game ends
+        if (mainMusicSource != null && mainMusicSource.isPlaying)
+        {
+            mainMusicSource.Stop();
+            Debug.Log("[GameManager] Music stopped in EndGame()");
+        }
+        
+        // Stop any other audio sources that might be playing
+        foreach (var audioSource in musicSources)
+        {
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+        }
         
         // Hide Game UI
         if (scoreText != null) scoreText.gameObject.SetActive(false);
@@ -1255,6 +1278,22 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("[GameManager] RestartGame: Destroying GameManager and reloading scene for clean restart");
         
+        // [FIX] Stop all music before restarting
+        if (mainMusicSource != null && mainMusicSource.isPlaying)
+        {
+            mainMusicSource.Stop();
+            Debug.Log("[GameManager] Music stopped in RestartGame()");
+        }
+        
+        // Stop any other audio sources
+        foreach (var audioSource in musicSources)
+        {
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+        }
+        
         // [CRITICAL FIX] Destroy gameOverPanel
         if (gameOverPanel != null)
         {
@@ -1294,6 +1333,22 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToLobby()
     {
+        // [FIX] Stop all music before returning to lobby
+        if (mainMusicSource != null && mainMusicSource.isPlaying)
+        {
+            mainMusicSource.Stop();
+            Debug.Log("[GameManager] Music stopped in ReturnToLobby()");
+        }
+        
+        // Stop any other audio sources
+        foreach (var audioSource in musicSources)
+        {
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+        }
+        
         Time.timeScale = 1f;
         // SchoolLobbyManager가 있는 Main 씬으로 이동
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
