@@ -225,39 +225,6 @@ public class SchoolLobbyManager : MonoBehaviour
         }
         
         Debug.Log("[SchoolLobbyManager] Setup Dramatic Lighting (Rim + Warm Key).");
-        
-        // [NEW] Create Version Display at Bottom of Screen
-        CreateVersionDisplay();
-    }
-
-    private void CreateVersionDisplay()
-    {
-        GameObject canvas = GameObject.Find("Canvas");
-        if (canvas == null) return;
-
-        // Check if version display already exists
-        if (GameObject.Find("VersionDisplay") != null) return;
-
-        GameObject versionObj = new GameObject("VersionDisplay");
-        versionObj.transform.SetParent(canvas.transform, false);
-
-        var versionText = versionObj.AddComponent<TMPro.TextMeshProUGUI>();
-        versionText.text = "v1.0.1 | Build: 1fc09cd | 2026-01-12\n<size=10>🎵 Music Bug Fix Applied</size>";
-        versionText.fontSize = 14;
-        versionText.fontStyle = TMPro.FontStyles.Normal;
-        versionText.alignment = TMPro.TextAlignmentOptions.Center;
-        versionText.color = new Color(0.5f, 0.5f, 0.5f, 0.8f); // Semi-transparent gray
-        versionText.raycastTarget = false; // Don't block clicks
-
-        RectTransform versionRt = versionObj.GetComponent<RectTransform>();
-        versionRt.anchorMin = new Vector2(0.5f, 0f); // Bottom center
-        versionRt.anchorMax = new Vector2(0.5f, 0f);
-        versionRt.pivot = new Vector2(0.5f, 0f);
-        versionRt.anchoredPosition = new Vector2(0, 10); // 10px from bottom
-        versionRt.sizeDelta = new Vector2(400, 50);
-
-        Debug.Log("[SchoolLobbyManager] Created Version Display at bottom of screen.");
-    }
 
         // ... (SongSelectPanel Logic) ...
         // [FIX] Song Select Panel Priority
@@ -377,6 +344,9 @@ public class SchoolLobbyManager : MonoBehaviour
         
         // [FIX] Bind Buttons LAST to ensure everything is ready
         BindButtonEvents();
+        
+        // [NEW] Create Version Display
+        CreateVersionDisplay();
     }
 
     // Helper for recursive find
@@ -389,6 +359,35 @@ public class SchoolLobbyManager : MonoBehaviour
             if (result != null) return result;
         }
         return null;
+    }
+
+    private void CreateVersionDisplay()
+    {
+        GameObject canvas = GameObject.Find("Canvas");
+        if (canvas == null) return;
+
+        // Check if version display already exists
+        if (GameObject.Find("VersionDisplay") != null) return;
+
+        GameObject versionObj = new GameObject("VersionDisplay");
+        versionObj.transform.SetParent(canvas.transform, false);
+
+        var versionText = versionObj.AddComponent<TMPro.TextMeshProUGUI>();
+        versionText.text = "v1.0.1 | Build: 1fc09cd | 2026-01-12\n<size=10>🎵 Music Bug Fix Applied</size>";
+        versionText.fontSize = 14;
+        versionText.fontStyle = TMPro.FontStyles.Normal;
+        versionText.alignment = TMPro.TextAlignmentOptions.Center;
+        versionText.color = new Color(0.5f, 0.5f, 0.5f, 0.8f); // Semi-transparent gray
+        versionText.raycastTarget = false; // Don't block clicks
+
+        RectTransform versionRt = versionObj.GetComponent<RectTransform>();
+        versionRt.anchorMin = new Vector2(0.5f, 0f); // Bottom center
+        versionRt.anchorMax = new Vector2(0.5f, 0f);
+        versionRt.pivot = new Vector2(0.5f, 0f);
+        versionRt.anchoredPosition = new Vector2(0, 10); // 10px from bottom
+        versionRt.sizeDelta = new Vector2(400, 50);
+
+        Debug.Log("[SchoolLobbyManager] Created Version Display at bottom of screen.");
     }
 
     private void BindButton(string btnName, UnityEngine.Events.UnityAction action)
