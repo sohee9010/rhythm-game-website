@@ -5,8 +5,8 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Step Up - Rhythm Game</title>
-  <link rel="shortcut icon" href="TemplateData/favicon.ico">
-  <link rel="stylesheet" href="TemplateData/style.css">
+  <link rel="shortcut icon" href="/game/TemplateData/favicon.ico">
+  <link rel="stylesheet" href="/game/TemplateData/style.css">
   <style>
     body,
     html {
@@ -80,13 +80,13 @@
       updateBannerVisibility();
     }
 
-    var buildUrl = "Build";
+    var buildUrl = "/game/Build";
     var loaderUrl = buildUrl + "/game.loader.js";
     var config = {
       dataUrl: buildUrl + "/game.data",
       frameworkUrl: buildUrl + "/game.framework.js",
       codeUrl: buildUrl + "/game.wasm",
-      streamingAssetsUrl: "StreamingAssets",
+      streamingAssetsUrl: "/game/StreamingAssets",
       companyName: "DefaultCompany",
       productName: "Step Up",
       productVersion: "0.1",
