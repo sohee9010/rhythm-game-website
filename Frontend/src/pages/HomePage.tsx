@@ -118,14 +118,14 @@ const HomePage: React.FC = () => {
       <footer className="py-6 bg-black/90 border-t border-purple-500/20">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-gray-500 text-sm">
-            Version: <span className="text-purple-400 font-mono">v1.0.1</span>
+            Version: <span className="text-purple-400 font-mono">v1.1.0</span>
             {' '} | {' '}
-            Build: <span className="text-cyan-400 font-mono">1fc09cd</span>
+            Build: <span className="text-cyan-400 font-mono">6859ebf</span>
             {' '} | {' '}
-            Updated: <span className="text-gray-400">2026-01-12</span>
+            Updated: <span className="text-gray-400">2026-01-13</span>
           </p>
           <p className="text-gray-600 text-xs mt-2">
-            🎵 Music Bug Fix Applied - All AudioSources Stop on Game End
+            🎵 Audio Separation Fix - Galaxias & Sodapop No Longer Mix
           </p>
         </div>
       </footer>
