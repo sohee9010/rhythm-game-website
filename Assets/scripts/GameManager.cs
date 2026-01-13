@@ -205,6 +205,17 @@ public class GameManager : MonoBehaviour
         // 3. Game Scene Logic (Only if NOT Lobby)
         Debug.Log("[GameManager] Game Scene loaded. Initializing Game.");
         
+        // [FIX] Clear previous audio clip to prevent mixing
+        if (mainMusicSource != null)
+        {
+            mainMusicSource.Stop();
+            mainMusicSource.clip = null;
+            Debug.Log("[GameManager] Cleared previous audio clip on scene load");
+        }
+        
+        // [FIX] Select music based on scene name BEFORE starting game
+        SelectMusicForScene();
+        
         // Reset State for new round
         score = 0; combo = 0; currentHp = maxHp;
         perfectCount = 0; greatCount = 0; badCount = 0; missCount = 0;
@@ -418,38 +429,64 @@ public class GameManager : MonoBehaviour
 
     private void SelectMusicForScene()
     {
-        if (isSecondScene)
+        // [FIX] Use scene name directly instead of isSecondScene flag to prevent confusion
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        
+        // [FIX] Clear previous music assignment
+        gameMusic = null;
+        
+        if (sceneName == "Game_second")
         {
             // Game_second 씬: Sodapop 사용
             if (sodapopMusic != null)
             {
                 gameMusic = sodapopMusic;
+                Debug.Log("[GameManager] ✓ Selected Sodapop music for Game_second scene");
             }
-            else if (gameMusic == null)
+            else
             {
                 gameMusic = Resources.Load<AudioClip>("Sodapop");
-                if (gameMusic == null)
+                if (gameMusic != null)
                 {
-                    Debug.LogWarning("[GameManager] Sodapop.wav를 Inspector에서 할당해주세요!");
+                    Debug.Log("[GameManager] ✓ Loaded Sodapop from Resources");
+                }
+                else
+                {
+                    Debug.LogError("[GameManager] ✗ Sodapop music not found! Assign in Inspector or add to Resources folder.");
                 }
             }
         }
-        else
+        else if (sceneName == "Game_first")
         {
             // Game_first 씬: Galaxias 사용
             if (galaxiasMusic != null)
             {
                 gameMusic = galaxiasMusic;
+                Debug.Log("[GameManager] ✓ Selected Galaxias music for Game_first scene");
             }
-            else if (gameMusic == null)
+            else
             {
-                Debug.LogWarning("[GameManager] Galaxias 음악을 Inspector에서 할당해주세요!");
+                Debug.LogError("[GameManager] ✗ Galaxias music not assigned! Assign in Inspector.");
             }
+        }
+        else
+        {
+            Debug.LogWarning($"[GameManager] Unknown scene '{sceneName}' - no music selected");
         }
     }
 
     public void StartGame()
     {
+        // [FIX] Re-validate music selection to ensure correct audio
+        SelectMusicForScene();
+        
+        // [FIX] Verify music is assigned before starting
+        if (gameMusic == null)
+        {
+            Debug.LogError("[GameManager] ✗ gameMusic is NULL! Cannot start game without music.");
+            return;
+        }
+        
         // Create HP Bar ONLY when game starts
         CreateHPBar();
         
@@ -612,6 +649,13 @@ public class GameManager : MonoBehaviour
                 audioSource.Stop();
                 Debug.Log($"[GameManager] Stopped AudioSource on {audioSource.gameObject.name}");
             }
+        }
+        
+        // [FIX] Clear mainMusicSource clip to prevent audio mixing on next game
+        if (mainMusicSource != null)
+        {
+            mainMusicSource.clip = null;
+            Debug.Log("[GameManager] Cleared mainMusicSource clip in EndGame");
         }
         
         Debug.Log($"[GameManager] Total AudioSources stopped: {allAudioSources.Length}");
