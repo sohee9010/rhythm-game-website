@@ -155,6 +155,25 @@ public class GameManager : MonoBehaviour
         
         // 1. Clean up legacy/orphan UI first
         CleanupLegacyUI();
+        
+        // [FIX] Destroy ALL UI elements from previous game to prevent "old screen" bug
+        Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+        foreach (var canvas in allCanvases)
+        {
+            // Destroy all children except the canvas itself
+            foreach (Transform child in canvas.transform)
+            {
+                if (child.name.Contains("GameOver") || 
+                    child.name.Contains("Score") || 
+                    child.name.Contains("Combo") ||
+                    child.name.Contains("HP") ||
+                    child.name.Contains("Rank"))
+                {
+                    Debug.Log($"[GameManager] Destroying old UI element: {child.name}");
+                    Destroy(child.gameObject);
+                }
+            }
+        }
 
         // 2. Check if we are in a Lobby or Main Menu scene
         // Contains("Lobby") or "Main" covers likely names (SchoolLobby, MainMenu, etc.)
@@ -205,12 +224,13 @@ public class GameManager : MonoBehaviour
         // 3. Game Scene Logic (Only if NOT Lobby)
         Debug.Log("[GameManager] Game Scene loaded. Initializing Game.");
         
-        // [FIX] Clear previous audio clip to prevent mixing
+        // [FIX] Clear previous audio clip AND reset volume to prevent mixing and loud audio
         if (mainMusicSource != null)
         {
             mainMusicSource.Stop();
             mainMusicSource.clip = null;
-            Debug.Log("[GameManager] Cleared previous audio clip on scene load");
+            mainMusicSource.volume = baseVolume; // Reset to base volume
+            Debug.Log($"[GameManager] Cleared previous audio clip and reset volume to {baseVolume}");
         }
         
         // [FIX] Select music based on scene name BEFORE starting game
