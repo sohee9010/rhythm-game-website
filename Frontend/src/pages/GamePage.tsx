@@ -5,6 +5,21 @@ const GamePage: React.FC = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
+        // Redirect to homepage on page refresh
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Mark that we're refreshing
+            sessionStorage.setItem('isRefreshing', 'true');
+        };
+
+        // Check if this is a refresh
+        if (sessionStorage.getItem('isRefreshing') === 'true') {
+            sessionStorage.removeItem('isRefreshing');
+            window.location.href = '/';
+            return;
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         // SocketIO 연결
         const socket = io("https://rhythm-game-website.onrender.com");
 
@@ -28,6 +43,7 @@ const GamePage: React.FC = () => {
         });
 
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
             socket.disconnect();
         };
     }, []);
