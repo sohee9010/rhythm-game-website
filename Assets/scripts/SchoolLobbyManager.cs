@@ -35,10 +35,10 @@ public class SchoolLobbyManager : MonoBehaviour
 
     private void BindButtonEvents()
     {
-        // [FIX] ?름 불일?문제 ?결 (Btn_GameStart vs Btn_Start)
+        // [FIX] ?�?불일?문제 ?�?(Btn_GameStart vs Btn_Start)
         BindButton("Btn_GameStart", OnGameStartClick);
-        BindButton("Btn_Start", OnGameStartClick); // ?? 로그???온 ?름
-        BindButton("StartButton", OnGameStartClick); // ?시 몰라??추?
+        BindButton("Btn_Start", OnGameStartClick); // ?? 로그??????�?
+        BindButton("StartButton", OnGameStartClick); // ???몰라??�?
 
         BindButton("Btn_Ranking", OnRankingClick);
         BindButton("Btn_Shop", OnShopClick);
@@ -373,7 +373,7 @@ public class SchoolLobbyManager : MonoBehaviour
         versionObj.transform.SetParent(canvas.transform, false);
 
         var versionText = versionObj.AddComponent<TMPro.TextMeshProUGUI>();
-        versionText.text = "v1.0.1 | Build: 1fc09cd | 2026-01-12\n<size=10>🎵 Music Bug Fix Applied</size>";
+        versionText.text = "v1.1.0 | Build: 6859ebf | 2026-01-13\n<size=10>?�� Audio Separation Fix Applied</size>";
         versionText.fontSize = 14;
         versionText.fontStyle = TMPro.FontStyles.Normal;
         versionText.alignment = TMPro.TextAlignmentOptions.Center;
@@ -436,7 +436,7 @@ public class SchoolLobbyManager : MonoBehaviour
             if (g != null) g.raycastTarget = false;
         }
 
-        // 2. 모든 ?스??TMP, Legacy Text)??Raycast ?기 (Inactive ?함)
+        // 2. 모든 ????TMP, Legacy Text)??Raycast ?�?(Inactive ???
 #if UNITY_2020_1_OR_NEWER
         var allTmpTexts = FindObjectsOfType<TMPro.TextMeshProUGUI>(true);
 #else
@@ -463,7 +463,7 @@ public class SchoolLobbyManager : MonoBehaviour
     private void Update()
     {
         // ... (Debug code remains) ...
-        // [DEBUG] 마우???릭 ??무엇???릭?었?? 로그 출력 (UI ?버깅용)
+        // [DEBUG] 마우???�???무엇???�???? 로그 출력 (UI ?버깅??
         if (Input.GetMouseButtonDown(0))
         {
             if (UnityEngine.EventSystems.EventSystem.current == null) return;
@@ -479,7 +479,7 @@ public class SchoolLobbyManager : MonoBehaviour
                 GameObject hitObj = results[0].gameObject;
                 Debug.Log($"[UI DEBUG] Clicked on: {hitObj.name}");
                 
-                // [FIX] ?스?? ?릭??가로채??으?즉시 꺼버리고 ?시???도
+                // [FIX] ???? ?�??가로채????즉시 꺼버리고 ???????
                 if (hitObj.name.Contains("Text") || hitObj.GetComponent<TMPro.TextMeshProUGUI>() != null || hitObj.GetComponent<UnityEngine.UI.Text>() != null)
                 {
                     var g = hitObj.GetComponent<UnityEngine.UI.Graphic>();
@@ -488,8 +488,8 @@ public class SchoolLobbyManager : MonoBehaviour
                         g.raycastTarget = false;
                         Debug.LogWarning($"[UI BLOCKER FOUND] Disabled Raycast on '{hitObj.name}'. CLICK AGAIN!");
                         
-                        // (?택 ?항) 부?버튼??찾아??강제 ?행? -> ?험????단 ??가 ?시 ?릭?게 ??
-                        // ????용??경험???해 부모의 버튼??찾아??Execute ???도 ?음.
+                        // (?????? 부?버튼??찾아??강제 ??? -> ??????????가 ????�?�???
+                        // ???????경험?????부모의 버튼??찾아??Execute ????????
                         var parentBtn = hitObj.GetComponentInParent<UnityEngine.UI.Button>();
                         if (parentBtn != null)
                         {
@@ -504,7 +504,7 @@ public class SchoolLobbyManager : MonoBehaviour
 
     private System.Collections.IEnumerator SeekCharacterAnimations()
     {
-        // [FIX] Main ?에?만 ?작?도??한
+        // [FIX] Main ???�?????????
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Main") yield break;
 
         yield return new WaitForSeconds(0.5f);
@@ -517,31 +517,31 @@ public class SchoolLobbyManager : MonoBehaviour
             {
                 Animator anim = obj.GetComponentInChildren<Animator>();
                 
-                // [FIX] Animator가 ?예 ?으?추??주?
+                // [FIX] Animator가 ??????�??�?
                 if (anim == null)
                 {
                     Debug.LogWarning($"[SchoolLobbyManager] No Animator found on {name}. Adding one automatically.");
                     anim = obj.AddComponent<Animator>();
-                    // Avatar??Controller가 ?어??T-Pose??????? ?단 컴포?트??존재?게 ??
+                    // Avatar??Controller가 ????T-Pose??????? ???컴포????존재?�???
                 }
 
                 if (anim != null)
                 {
-                    // Animator가 꺼져?으?켜주?
+                    // Animator가 꺼져???켜주?
                     if (!anim.enabled) anim.enabled = true;
                     if (!anim.gameObject.activeInHierarchy) anim.gameObject.SetActive(true);
                     
-                    // Controller ?인
+                    // Controller ???
                     if (anim.runtimeAnimatorController == null)
                     {
                         Debug.LogWarning($"[SchoolLobbyManager] {name} found but NO Controller assigned!");
-                        // ?기?????에 ?당?줄 ?도 ?음 (Resource 로드 ??
+                        // ?�??????????�???????(Resource 로드 ??
                     }
                 }
 
                 if (anim != null)
                 {
-                    // ?재 ?생 중인 ?태 ?보 가?오?
+                    // ??????중인 ????�?가???
                     AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
                     
                     Debug.Log($"[SchoolLobbyManager] Found Animator on {anim.gameObject.name}. State Length: {state.length}, Loop: {state.loop}");
@@ -549,30 +549,30 @@ public class SchoolLobbyManager : MonoBehaviour
                     if (state.length > 0)
                     {
                         float offset = 20f;
-                        // 0~1 ?이???규?된 ?간(Normalized Time)?로 변??
+                        // 0~1 ?????�????�?Normalized Time)?�?변??
                         float normalizedTime = (offset % state.length) / state.length;
                         
-                        // 강제??당 ?치??동
+                        // 강제?????�????
                         anim.Play(state.fullPathHash, 0, normalizedTime);
                         
-                        // ?시 Play가 ??먹힐 경우??비해 Update???출
+                        // ???Play가 ??먹힐 경우??비해 Update???�?
                         anim.Update(0f);
                         
                         Debug.Log($"[SchoolLobbyManager] {name} seeked to {normalizedTime} (20s)");
                     }
                     else
                     {
-                        // 길이가 0?면 ?마???태가 ?직 Transition 중이거나 초기???됨.
-                        // 강제?"Base Layer.Motion" 같? ?름?로 ?생 ?도?볼 ???음.
-                        // MMD4Mecanim? 보통 기본 ?이?에???작??
-                        anim.Play(0, -1, 0.2f); // 20% 지?으?강제 ?동 ?도 (?시)
+                        // 길이가 0?�??�????��? ?�?Transition 중이거나 초기?????
+                        // 강제?"Base Layer.Motion" �? ?�?�???????�??????
+                        // MMD4Mecanim? 보통 기본 ??????????
+                        anim.Play(0, -1, 0.2f); // 20% 지???강제 ??????(???
                         Debug.LogWarning($"[SchoolLobbyManager] {name} State length is 0. Tried forcing normalized time 0.2");
                     }
                 }
                 else
                 {
                     Debug.LogWarning($"[SchoolLobbyManager] Found {name} but NO Animator found in children!");
-                    // ?식 ?브?트 리스??출력
+                    // ????�???리스??출력
                     foreach (Transform t in obj.transform)
                     {
                         Debug.Log($"   Child: {t.name}");
@@ -634,7 +634,7 @@ public class SchoolLobbyManager : MonoBehaviour
     {
         Debug.Log($"[SchoolLobbyManager] Starting Game Loop... Selected Song: {_selectedSongTitle}");
         
-        // [FIX] ?택??곡에 ?라 ??분기
+        // [FIX] ????곡에 ?????분기
         if (_selectedSongTitle.ToUpper().Contains("SODAPOP"))
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene("Game_second");
@@ -696,7 +696,7 @@ public class SchoolLobbyManager : MonoBehaviour
         }
     }
 
-    // SetMainMenuVisible 메서?는 ???상 ?용?? ?으므????거??비워??
+    // SetMainMenuVisible 메서???????????? ??��?????�??비워??
     private void SetMainMenuVisible(bool visible) { }
 
     private void PopulateShop(GameObject panel)
@@ -1149,7 +1149,7 @@ public class SchoolLobbyManager : MonoBehaviour
 
     private void BindSongSelectStartButton(GameObject panel)
     {
-        // "StartButton" ?는 "Btn_Start" 찾기
+        // "StartButton" ???"Btn_Start" 찾기
         var buttons = panel.GetComponentsInChildren<UnityEngine.UI.Button>(true);
         UnityEngine.UI.Button startBtn = null;
         
@@ -1192,13 +1192,13 @@ public class SchoolLobbyManager : MonoBehaviour
 
     private void BindCloseButton(GameObject panel)
     {
-        // ?널 ?에??"CloseButton" ?름??가?버튼 찾기 (???으?
-        // 만약 ?름??"Close"?면 "Close"?찾으?요. 보통 "CloseButton"?나 "Btn_Close" ?일 ???습?다.
-        // ?기?는 "CloseButton" ?는 "Btn_Close" ?을 ?도?니??
+        // ???????"CloseButton" ?�??가?버튼 찾기 (?????
+        // 만약 ?�??"Close"?�?"Close"?찾으??? 보통 "CloseButton"???"Btn_Close" ??????????
+        // ?�???"CloseButton" ???"Btn_Close" ?????????
         
-        UnityEngine.UI.Button closeBtn = panel.GetComponentInChildren<UnityEngine.UI.Button>(); // ?단 ?무 버튼?나 ?나 ??히???(보통 ?기 ?나뿐일 ???효)
+        UnityEngine.UI.Button closeBtn = panel.GetComponentInChildren<UnityEngine.UI.Button>(); // ????�?버튼????????????(보통 ?�???�뿐???????
         
-        // ?름?로 ?확??찾고 ?다?
+        // ?�?�?????찾고 ???
         UnityEngine.UI.Button[] allBtns = panel.GetComponentsInChildren<UnityEngine.UI.Button>(true);
         foreach (var btn in allBtns)
         {
@@ -1211,13 +1211,13 @@ public class SchoolLobbyManager : MonoBehaviour
 
         if (closeBtn != null)
         {
-            // ?기 버튼???스?? ?릭??막? ?게 ?정
+            // ?�?버튼?????? ?�??�? ?�????
             var txt = closeBtn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             if (txt != null) txt.raycastTarget = false;
             var txt2 = closeBtn.GetComponentInChildren<UnityEngine.UI.Text>();
             if (txt2 != null) txt2.raycastTarget = false;
 
-            // ?벤???결
+            // ?�???�?
             closeBtn.onClick.RemoveAllListeners();
             closeBtn.onClick.AddListener(() => {
                 panel.SetActive(false);
