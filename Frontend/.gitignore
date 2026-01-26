@@ -12,10 +12,16 @@ node_modules/
 
 # Misc
 .DS_Store
+
+# Environment Variables
+# .env는 로컬 개발용 (민감한 정보 포함 가능)
+.env
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local
+# .env.production은 배포 설정 공유를 위해 커밋 가능
+# (민감한 정보는 Vercel/Netlify 환경 변수에서 관리)
+# .env.production.local
 
 # Logs
 npm-debug.log*

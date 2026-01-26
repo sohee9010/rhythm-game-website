@@ -23,6 +23,8 @@ export interface AuthUser {
   name: string
   phone?: string
   address?: string
+  coins?: number
+  inventory?: string[]
   created_at: string
   updated_at?: string
 }
@@ -80,7 +82,7 @@ export const signup = async (userData: SignupData): Promise<{ success: boolean; 
 export const login = async (loginData: LoginData): Promise<{ success: boolean; user?: AuthUser; error?: string }> => {
   try {
     authLogger.log('로그인 시도:', { email: loginData.email })
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: loginData.email,
       password: loginData.password
@@ -93,7 +95,7 @@ export const login = async (loginData: LoginData): Promise<{ success: boolean; u
 
     if (data.user) {
       authLogger.log('Auth 성공, 사용자 프로필 조회 중...')
-      
+
       // users 테이블에서 사용자 정보 가져오기
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
@@ -131,7 +133,7 @@ export const logout = async (): Promise<void> => {
 export const getCurrentUser = async (): Promise<AuthUser | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return null
     }
@@ -145,11 +147,11 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
 
     if (error) {
       authLogger.error('Profile fetch error:', error.message)
-      
+
       // 사용자가 users 테이블에 없으면 생성
       if (error.code === 'PGRST116') {
         authLogger.log('사용자가 users 테이블에 없습니다. 새로 생성합니다.')
-        
+
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert([{
@@ -158,7 +160,9 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
             name: user.user_metadata?.name || '사용자',
             phone: user.user_metadata?.phone || '',
             address: user.user_metadata?.address || '',
-            agree_marketing: user.user_metadata?.agree_marketing || false
+            agree_marketing: user.user_metadata?.agree_marketing || false,
+            coins: 0,
+            inventory: []
           }])
           .select()
           .single()
@@ -170,7 +174,7 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
 
         return newUser
       }
-      
+
       return null
     }
 
@@ -308,13 +312,13 @@ export const updatePasswordWithTemp = async (userId: string, tempPassword: strin
   try {
     // 이메일로 비밀번호 재설정 링크 전송
     const emailResult = await sendTempPasswordEmail(email, tempPassword)
-    
+
     if (!emailResult.success) {
       return emailResult
     }
 
     console.log(`사용자 ${email}에게 비밀번호 재설정 이메일 전송됨`)
-    
+
     return { success: true }
   } catch (error) {
     console.error('Password update error:', error)
@@ -327,7 +331,7 @@ export const verifyCurrentPassword = async (currentPassword: string): Promise<{ 
   try {
     // Supabase Auth를 사용한 현재 비밀번호 검증
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user || !user.email) {
       return { success: false, error: '사용자 정보를 찾을 수 없습니다.' }
     }
@@ -378,7 +382,7 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 export const verifyPasswordForAccess = async (password: string): Promise<{ success: boolean; error?: string }> => {
   try {
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user || !user.email) {
       return { success: false, error: '사용자 정보를 찾을 수 없습니다.' }
     }

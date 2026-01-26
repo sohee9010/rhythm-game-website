@@ -124,7 +124,7 @@ const MyPage: React.FC = () => {
     if (loading || !currentUser) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>
 
     return (
-        <div className="min-h-screen bg-black text-white py-20 px-4">
+        <div className="min-h-screen bg-black text-white px-4 pt-40">
             <div className="max-w-4xl mx-auto">
                 {/* Profile Header */}
                 <div className="flex items-center gap-8 mb-12 p-8 bg-gray-900 rounded-2xl border border-gray-800 shadow-[0_0_30px_rgba(168,85,247,0.1)]">

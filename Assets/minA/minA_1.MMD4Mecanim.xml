@@ -182,5 +182,229 @@
       <selfShadowEnabled>true</selfShadowEnabled>
       <sphereMapEnabled>true</sphereMapEnabled>
     </materialGlobalProperty>
+    <materialProperyList>
+      <MaterialProperty>
+        <materialName>0.2450_N00_000_00_Body_00_SKIN (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>1.2450_N00_000_00_EyeWhite_00_EYE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>2.2450_N00_000_00_Face_00_SKIN (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>3.2450_N00_000_00_FaceMouth_00_FACE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>4.2450_N00_000_00_HairBack_00_HAIR (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>5.2450_N00_000_Hair_00_HAIR (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>6.2450_N00_001_01_Shoes_01_CLOTH (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>7.2450_N00_001_02_Accessory_Tie_01_CLOTH (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>8.2450_N00_001_03_Bottoms_01_CLOTH (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>9.2450_N00_007_01_Tops_01_CLOTH (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>10.2450_N00_007_02_Tops_01_CLOTH (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>11.3000_N00_000_00_EyeIris_00_EYE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>12.3000_N00_000_00_FaceEyeline_00_FACE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>13.3500_N00_000_00_EyeHighlight_00_EYE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>14.4000_N00_000_00_FaceBrow_00_FACE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+      <MaterialProperty>
+        <materialName>15.4500_N00_000_00_FaceEyelash_00_FACE (Instance)</materialName>
+        <isVisible>true</isVisible>
+        <isLocked>false</isLocked>
+        <isUIFoldout>false</isUIFoldout>
+        <overrideToonTone>false</overrideToonTone>
+        <overrideShadowLum>false</overrideShadowLum>
+        <overrideTess>false</overrideTess>
+        <tessEnabled>false</tessEnabled>
+        <transparencyCache>Unknown</transparencyCache>
+      </MaterialProperty>
+    </materialProperyList>
+    <materialBlockPropertyList>
+      <MaterialBlockProperty>
+        <materialNames>
+          <string>0.2450_N00_000_00_Body_00_SKIN (Instance)</string>
+          <string>1.2450_N00_000_00_EyeWhite_00_EYE (Instance)</string>
+          <string>2.2450_N00_000_00_Face_00_SKIN (Instance)</string>
+          <string>3.2450_N00_000_00_FaceMouth_00_FACE (Instance)</string>
+          <string>4.2450_N00_000_00_HairBack_00_HAIR (Instance)</string>
+          <string>5.2450_N00_000_Hair_00_HAIR (Instance)</string>
+          <string>6.2450_N00_001_01_Shoes_01_CLOTH (Instance)</string>
+          <string>7.2450_N00_001_02_Accessory_Tie_01_CLOTH (Instance)</string>
+          <string>8.2450_N00_001_03_Bottoms_01_CLOTH (Instance)</string>
+          <string>9.2450_N00_007_01_Tops_01_CLOTH (Instance)</string>
+          <string>10.2450_N00_007_02_Tops_01_CLOTH (Instance)</string>
+          <string>11.3000_N00_000_00_EyeIris_00_EYE (Instance)</string>
+          <string>12.3000_N00_000_00_FaceEyeline_00_FACE (Instance)</string>
+          <string>13.3500_N00_000_00_EyeHighlight_00_EYE (Instance)</string>
+          <string>14.4000_N00_000_00_FaceBrow_00_FACE (Instance)</string>
+          <string>15.4500_N00_000_00_FaceEyelash_00_FACE (Instance)</string>
+        </materialNames>
+        <isUIFoldout>true</isUIFoldout>
+        <baseColor>
+          <r>1</r>
+          <g>1</g>
+          <b>1</b>
+          <a>1</a>
+        </baseColor>
+        <emissionColor>
+          <r>0</r>
+          <g>0</g>
+          <b>0</b>
+          <a>0</a>
+        </emissionColor>
+        <emissionPower>1</emissionPower>
+        <standardBRDF>Specular</standardBRDF>
+        <standardSpecularColor>
+          <r>0</r>
+          <g>0</g>
+          <b>0</b>
+          <a>0</a>
+        </standardSpecularColor>
+        <standardMetallicGlossiness>0</standardMetallicGlossiness>
+        <standardSpecularGlossiness>0</standardSpecularGlossiness>
+        <standardMetallic>0</standardMetallic>
+      </MaterialBlockProperty>
+    </materialBlockPropertyList>
   </mmd4MecanimProperty>
 </PMX2FBXConfig>

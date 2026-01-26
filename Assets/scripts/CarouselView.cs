@@ -94,8 +94,9 @@ public class CarouselView : MonoBehaviour, IEndDragHandler, IScrollHandler
                 float scale = Mathf.Lerp(scaleFactor, 0.8f, t);
                 item.localScale = Vector3.Lerp(item.localScale, new Vector3(scale, scale, 1f), Time.deltaTime * scaleSpeed);
                 
-                Image bg = item.GetComponent<Image>();
-                if (bg) bg.color = Color.Lerp(selectedColor, normalColor, t);
+                // [FIX] User requested NO Filter/Tint on images
+                // Image bg = item.GetComponent<Image>();
+                // if (bg) bg.color = Color.Lerp(selectedColor, normalColor, t);
             }
         }
         else
@@ -103,7 +104,7 @@ public class CarouselView : MonoBehaviour, IEndDragHandler, IScrollHandler
             float centerX = -container.anchoredPosition.x;
             for (int i = 0; i < items.Length; i++)
             {
-                if (items[i] == null) { InitializeItems(); return; } // [FIX] Safety Check
+                if (items[i] == null) { InitializeItems(); return; } 
 
                 RectTransform item = items[i];
                 float dist = Mathf.Abs(item.anchoredPosition.x - centerX);
@@ -111,8 +112,9 @@ public class CarouselView : MonoBehaviour, IEndDragHandler, IScrollHandler
                 float scale = Mathf.Lerp(scaleFactor, 0.8f, t);
                 item.localScale = Vector3.Lerp(item.localScale, new Vector3(scale, scale, 1f), Time.deltaTime * scaleSpeed);
                 
-                Image bg = item.GetComponent<Image>();
-                if (bg) bg.color = Color.Lerp(selectedColor, normalColor, t);
+                // [FIX] User requested NO Filter/Tint on images
+                // Image bg = item.GetComponent<Image>();
+                // if (bg) bg.color = Color.Lerp(selectedColor, normalColor, t);
             }
         }
     }

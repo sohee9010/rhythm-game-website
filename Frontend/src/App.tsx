@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
-import Toast from './components/Toast'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import UnityLoginPage from './pages/UnityLoginPage'
 import SignupPage from './pages/SignupPage'
 import FindIdPage from './pages/FindIdPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -16,6 +16,10 @@ import InquiryPage from './pages/InquiryPage'
 import InquiryHistoryPage from './pages/InquiryHistoryPage'
 import InquiryDetailPage from './pages/InquiryDetailPage'
 import GamePage from './pages/GamePage'
+import ControllerPage from './pages/ControllerPage'
+import PaymentSuccessPage from './pages/PaymentSuccessPage'
+import PaymentFailPage from './pages/PaymentFailPage'
+import PaymentPage from './pages/PaymentPage'
 
 import { UserProvider } from './context/UserContext'
 
@@ -23,7 +27,7 @@ import { UserProvider } from './context/UserContext'
 const AdminApp = lazy(() => import('./admin/App'))
 
 // 헤더를 숨길 페이지들을 정의 (관리자 페이지 포함)
-const hideHeaderPaths = ['/login', '/signup', '/find-id', '/forgot-password', '/reset-password']
+const hideHeaderPaths = ['/login', '/unity-login', '/signup', '/find-id', '/forgot-password', '/reset-password', '/controller']
 
 // 관리자 페이지인지 확인하는 함수
 const isAdminPath = (pathname: string) => pathname.startsWith('/admin')
@@ -59,6 +63,7 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/unity-login" element={<UnityLoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/find-id" element={<FindIdPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -73,6 +78,14 @@ const AppContent: React.FC = () => {
 
             {/* 게임 실행 페이지 */}
             <Route path="/game" element={<GamePage />} />
+
+            {/* 모바일 컨트롤러 페이지 */}
+            <Route path="/controller" element={<ControllerPage />} />
+
+            {/* 결제 관련 페이지 */}
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/payment/success" element={<PaymentSuccessPage />} />
+            <Route path="/payment/fail" element={<PaymentFailPage />} />
 
             {/* 관리자 라우트 유지 */}
             <Route path="/admin/*" element={

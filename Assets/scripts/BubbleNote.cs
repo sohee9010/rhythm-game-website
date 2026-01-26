@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// 투명하고 반짝이는 2D 원형 노트 - 수축하는 링 디자인
+/// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class BubbleNote : MonoBehaviour
 {
@@ -7,151 +10,133 @@ public class BubbleNote : MonoBehaviour
     private float lifeTime;
     private float targetTime; 
 
-    private LineRenderer lineRenderer;
+    private LineRenderer outerRing;      // 수축하는 외부 링
+    private LineRenderer targetRing;     // 고정된 타겟 링
+    private LineRenderer flashRing;      // 반짝임 효과용 추가 링
     private bool isHit = false;
 
-    private int segments = 50;
-    public float xradius = 1.0f; 
-    public float yradius = 1.0f;
-    private float startRadiusScale = 3.0f; 
+    private int segments = 50; // 부드러운 원
+    public float targetRadius = 0.8f;
+    private float startRadius = 2.8f;
 
     private Camera mainCamera;
-    private static Texture2D softVideoLineTex; // Cached Texture
-
-    private float randomScaleFactor = 2.0f;
     private Color noteColor = Color.white;
+    private float randomScaleFactor = 1.5f;
+
+    // 파티클
+    private ParticleSystem glowParticles;
 
     public void Initialize(float lifeTime)
     {
-        this.lifeTime = lifeTime;
+        this.lifeTime = lifeTime * 1.2f; // [조정] 빠른 수축 (2.0 → 1.2 배율)
         this.spawnTime = Time.time;
-        this.targetTime = spawnTime + lifeTime;
+        this.targetTime = spawnTime + this.lifeTime;
         
         mainCamera = Camera.main; 
+        randomScaleFactor = Random.Range(1.3f, 1.7f);
 
-        // [FIX] Random Size (1.5x to 2.8x)
-        randomScaleFactor = Random.Range(1.8f, 3.0f);
-
-        // [FIX] Random Neon Color
-        // High Saturation (0.7-1.0), High Value (1.0) for Neon look
-        noteColor = Color.HSVToRGB(Random.value, Random.Range(0.7f, 1f), 1f);
-        noteColor.a = 0.8f; // Alpha
+        // 밝고 선명한 네온 색상
+        Color[] neonPalette = new Color[] {
+            new Color(0f, 1f, 1f),      // 시안
+            new Color(1f, 0f, 1f),      // 마젠타
+            new Color(1f, 1f, 0f),      // 옐로우
+            new Color(0f, 1f, 0.5f),    // 민트
+            new Color(1f, 0.5f, 0f),    // 오렌지
+            new Color(0.5f, 1f, 0f)     // 라임
+        };
+        noteColor = neonPalette[Random.Range(0, neonPalette.Length)];
+        noteColor.a = 1f;
     }
 
-    private Renderer targetRenderer; // Visual to effect
-
-    // Revert to standard Start, remove Awake destruction
-    // Revert to standard Start, remove Awake destruction
     void Start()
     {
-        // 1. Setup Line Renderer (Ring) - NEON GLOW STYLE
-        lineRenderer = GetComponent<LineRenderer>();
-        lineRenderer.useWorldSpace = false;
+        CreateSimpleRings();
+        CreateGlowParticles();
         
-        // Defaults
-        if (segments < 10) segments = 50; 
-        if (xradius < 0.1f) xradius = 1.0f;
-        if (yradius < 0.1f) yradius = 1.0f;
-
-        // Draw Circle Geometry
-        lineRenderer.positionCount = segments + 1;
-        lineRenderer.loop = true; 
-
-        float lx, ly;
-        float angle = 0f;
-        for (int i = 0; i < (segments + 1); i++)
-        {
-            lx = Mathf.Sin(Mathf.Deg2Rad * angle) * xradius;
-            ly = Mathf.Cos(Mathf.Deg2Rad * angle) * yradius;
-
-            lineRenderer.SetPosition(i, new Vector3(lx, ly, 0));
-            angle += (360f / segments);
-        }
-
-        // [CRITICAL FIX] Restore "Glow" Texture
-        // We create a gradient that is SOLID in the absolute center but FADES OUT to create a "Halo"
-        if (softVideoLineTex == null) {
-            softVideoLineTex = new Texture2D(1, 128); // Higher resolution gradient
-            for (int k = 0; k < 128; k++) { 
-                // Normalized pos 0..1
-                float t = k / 127f; 
-                // Sin wave from 0 to PI (0 -> 1 -> 0)
-                float v = Mathf.Sin(t * Mathf.PI); 
-                // Power it to make it sharper (less "fat")
-                v = Mathf.Pow(v, 3.0f); 
-                
-                softVideoLineTex.SetPixel(0, k, new Color(1, 1, 1, v));
-            }
-            softVideoLineTex.Apply();
-            softVideoLineTex.wrapMode = TextureWrapMode.Clamp;
-        }
-
-        // [FIX] Material Setup
-        var lineShader = Shader.Find("Particles/Additive");
-        if (lineShader == null) lineShader = Shader.Find("Mobile/Particles/Additive");
-        if (lineShader == null) lineShader = Shader.Find("Sprites/Default");
-        
-        Material ringMat = new Material(lineShader);
-        ringMat.mainTexture = softVideoLineTex;
-        
-        // Color: bright white with transparency to let the additive blend work its magic
-        ringMat.color = new Color(1f, 1f, 1f, 1f); 
-        lineRenderer.material = ringMat;
-        
-        // [CRITICAL FIX] Width: 0.5f
-        // Since the texture fades out at edges, this 0.5f will look like a 0.1f core with 0.2f glow on sides
-        lineRenderer.startWidth = 0.5f; 
-        lineRenderer.endWidth = 0.5f;
-        
-        // Default color (Blue-ish Cyan Glow)
-        Color neonColor = new Color(0.2f, 0.8f, 1f, 0.9f);
-        lineRenderer.startColor = neonColor;
-        lineRenderer.endColor = neonColor;
-        
-        lineRenderer.enabled = true;
-
-        // 2. Setup Note Visuals (Sphere)
-        if (targetRenderer == null) targetRenderer = GetComponent<Renderer>();
-        if (targetRenderer == null) targetRenderer = gameObject.AddComponent<MeshRenderer>();
-        
-        // Soft Bubble Texture for Mesh
-        Texture2D sphereTex = new Texture2D(32, 32); // Use local var to ensure separation
-        for (int ty = 0; ty < 32; ty++) {
-            for (int tx = 0; tx < 32; tx++) {
-                float dx = tx - 15.5f;
-                float dy = ty - 15.5f;
-                float dist = Mathf.Sqrt(dx*dx + dy*dy) / 16f;
-                float alpha = Mathf.Clamp01(1f - dist);
-                alpha = Mathf.Pow(alpha, 0.5f); 
-                sphereTex.SetPixel(tx, ty, new Color(1, 1, 1, alpha));
-            }
-        }
-        sphereTex.Apply();
-
-        // [CRITICAL FIX] Alpha Blended Sphere (Transparent)
-        Shader safeShader = Shader.Find("Mobile/Particles/Alpha Blended");
-        if (safeShader == null) safeShader = Shader.Find("Particles/Alpha Blended");
-        if (safeShader == null) safeShader = Shader.Find("Sprites/Default");
-
-        Material sphereMat = new Material(safeShader);
-        sphereMat.mainTexture = sphereTex;
-        
-        // Apply Note Color with Transparency
-        Color finalColor = noteColor;
-        finalColor.a = 0.5f; // Slightly more transparent
-        sphereMat.color = finalColor;
-        
-        if (sphereMat.HasProperty("_TintColor"))
-            sphereMat.SetColor("_TintColor", finalColor);
-
-        targetRenderer.material = sphereMat;
-        targetRenderer.enabled = true;
-        
-        transform.localScale = Vector3.zero;
+        transform.localScale = Vector3.one * randomScaleFactor;
     }
 
-    // Deprecated
-    public void SetMaterial(Material mat) { }
+    private void CreateSimpleRings()
+    {
+        // 1. 타겟 링 (고정, 얇고 투명하게)
+        targetRing = GetComponent<LineRenderer>();
+        SetupCircle(targetRing, targetRadius, 0.1f, noteColor, 0.5f); // [투명] 알파 0.8 → 0.5
+
+        // 2. 외부 수축 링 (두껍고 투명하게)
+        GameObject outerObj = new GameObject("OuterRing");
+        outerObj.transform.SetParent(transform, false);
+        outerRing = outerObj.AddComponent<LineRenderer>();
+        SetupCircle(outerRing, startRadius, 0.18f, noteColor, 0.6f); // [투명] 알파 1.0 → 0.6
+
+        // 3. [NEW] 반짝임 링 (Perfect 타이밍에 강렬하게)
+        GameObject flashObj = new GameObject("FlashRing");
+        flashObj.transform.SetParent(transform, false);
+        flashRing = flashObj.AddComponent<LineRenderer>();
+        SetupCircle(flashRing, targetRadius, 0.15f, Color.white, 0f); // 처음엔 투명
+    }
+
+    private void SetupCircle(LineRenderer lr, float radius, float width, Color color, float alpha)
+    {
+        lr.useWorldSpace = false;
+        lr.positionCount = segments + 1;
+        lr.loop = true;
+
+        // 원 그리기
+        for (int i = 0; i <= segments; i++)
+        {
+            float angle = i * (360f / segments);
+            float rad = angle * Mathf.Deg2Rad;
+            float x = Mathf.Cos(rad) * radius;
+            float y = Mathf.Sin(rad) * radius;
+            lr.SetPosition(i, new Vector3(x, y, 0));
+        }
+
+        // 머티리얼 설정
+        Shader shader = Shader.Find("Particles/Additive");
+        if (shader == null) shader = Shader.Find("Mobile/Particles/Additive");
+        if (shader == null) shader = Shader.Find("Sprites/Default");
+
+        Material mat = new Material(shader);
+        mat.color = new Color(2.5f, 2.5f, 2.5f, 1f); // 매우 밝게
+        lr.material = mat;
+
+        lr.startWidth = width;
+        lr.endWidth = width;
+        
+        Color finalColor = color;
+        finalColor.a = alpha;
+        lr.startColor = finalColor;
+        lr.endColor = finalColor;
+    }
+
+    // [REMOVED] CreateCenterDot() method - 중심 점 완전 제거
+
+    private void CreateGlowParticles()
+    {
+        GameObject particleObj = new GameObject("GlowParticles");
+        particleObj.transform.SetParent(transform, false);
+        glowParticles = particleObj.AddComponent<ParticleSystem>();
+
+        var main = glowParticles.main;
+        main.startColor = noteColor;
+        main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.12f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
+        main.startLifetime = 1.8f;
+        main.maxParticles = 10;
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+
+        var emission = glowParticles.emission;
+        emission.rateOverTime = 5;
+
+        var shape = glowParticles.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = targetRadius;
+
+        var renderer = glowParticles.GetComponent<ParticleSystemRenderer>();
+        Shader shader = Shader.Find("Particles/Additive");
+        if (shader == null) shader = Shader.Find("Mobile/Particles/Additive");
+        renderer.material = new Material(shader);
+    }
 
     private void Update()
     {
@@ -164,51 +149,114 @@ public class BubbleNote : MonoBehaviour
 
         float timeAlive = Time.time - spawnTime;
         float progress = timeAlive / lifeTime;
-
-        // [FIX] BUBBLE POP-IN ANIMATION WITH RANDOM SCALE
-        float popDuration = 0.4f; 
-        if (timeAlive < popDuration)
-        {
-            float popT = timeAlive / popDuration;
-            transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one * randomScaleFactor, Mathf.SmoothStep(0, 1, popT));
-        }
-        else
-        {
-             transform.localScale = Vector3.one * randomScaleFactor;
-        }
-
         float timeRemaining = targetTime - Time.time;
 
-        if (timeRemaining <= 0.5f)
+        // 외부 링 수축 (startRadius → targetRadius)
+        float currentRadius = Mathf.Lerp(startRadius, targetRadius, progress);
+        UpdateCircleRadius(outerRing, currentRadius);
+
+        // Perfect 타이밍 계산
+        float radiusDiff = Mathf.Abs(currentRadius - targetRadius);
+        
+        if (timeRemaining <= 1.5f)
         {
-            // Judgment Ready: Cyan Pulse
-            // Keep it THICKER for GLOW (0.5f base)
-            Color readyColor = new Color(0.2f, 0.9f, 1f, 0.9f);
-            lineRenderer.startColor = readyColor; 
-            lineRenderer.endColor = readyColor;
-            
-            float pulse = Mathf.PingPong(Time.time * 8, 0.05f); 
-            lineRenderer.startWidth = 0.5f + pulse; 
-            lineRenderer.endWidth = 0.5f + pulse;
+            if (radiusDiff < 0.25f) // Perfect 범위
+            {
+                // [NEW] 육각형처럼 강렬한 반짝임 효과
+                float intensity = 1f - (radiusDiff / 0.25f);
+                
+                // 타겟 링 강렬한 펄스
+                float pulse = Mathf.Sin(Time.time * 15) * 0.1f * intensity;
+                targetRing.startWidth = 0.1f + pulse;
+                targetRing.endWidth = 0.1f + pulse;
+                
+                // 외부 링 펄스
+                outerRing.startWidth = 0.18f + pulse * 2f;
+                outerRing.endWidth = 0.18f + pulse * 2f;
+                
+                // [NEW] 반짝임 링 - 흰색으로 강렬하게
+                float flashIntensity = Mathf.PingPong(Time.time * 20, 1f) * intensity;
+                Color flashColor = Color.white;
+                flashColor.a = flashIntensity * 0.8f;
+                flashRing.startColor = flashColor;
+                flashRing.endColor = flashColor;
+                flashRing.startWidth = 0.15f + flashIntensity * 0.2f;
+                flashRing.endWidth = 0.15f + flashIntensity * 0.2f;
+                
+                // 색상 변화 (흰색으로)
+                Color readyColor = Color.Lerp(noteColor, Color.white, intensity * 0.9f);
+                readyColor.a = 0.8f; // [투명] 유지
+                outerRing.startColor = readyColor;
+                outerRing.endColor = readyColor;
+                
+                Color targetColor = readyColor;
+                targetColor.a = 0.6f; // [투명] 유지
+                targetRing.startColor = targetColor;
+                targetRing.endColor = targetColor;
+            }
+            else
+            {
+                // 일반 준비 상태
+                float pulse = Mathf.Sin(Time.time * 6) * 0.04f;
+                targetRing.startWidth = 0.1f + pulse;
+                targetRing.endWidth = 0.1f + pulse;
+                outerRing.startWidth = 0.18f + pulse;
+                outerRing.endWidth = 0.18f + pulse;
+                
+                Color outerColor = noteColor;
+                outerColor.a = 0.6f; // [투명]
+                outerRing.startColor = outerColor;
+                outerRing.endColor = outerColor;
+                
+                Color targetColor = noteColor;
+                targetColor.a = 0.5f; // [투명]
+                targetRing.startColor = targetColor;
+                targetRing.endColor = targetColor;
+                
+                // 반짝임 링 숨김
+                flashRing.startColor = new Color(1, 1, 1, 0);
+                flashRing.endColor = new Color(1, 1, 1, 0);
+            }
         }
         else
         {
-            // Normal: White and GLOWING (0.5f)
-            lineRenderer.startColor = new Color(1f, 1f, 1f, 0.8f);
-            lineRenderer.endColor = new Color(1f, 1f, 1f, 0.8f);
-            lineRenderer.startWidth = 0.5f;
-            lineRenderer.endWidth = 0.5f;
-            lineRenderer.enabled = true;
+            // 일반 상태
+            targetRing.startWidth = 0.1f;
+            targetRing.endWidth = 0.1f;
+            outerRing.startWidth = 0.18f;
+            outerRing.endWidth = 0.18f;
+            
+            Color outerColor = noteColor;
+            outerColor.a = 0.6f; // [투명]
+            outerRing.startColor = outerColor;
+            outerRing.endColor = outerColor;
+            
+            Color targetColor = noteColor;
+            targetColor.a = 0.5f; // [투명]
+            targetRing.startColor = targetColor;
+            targetRing.endColor = targetColor;
+            
+            // 반짝임 링 숨김
+            flashRing.startColor = new Color(1, 1, 1, 0);
+            flashRing.endColor = new Color(1, 1, 1, 0);
         }
 
+        // Miss 체크
         if (progress >= 1.0f)
         {
             OnMiss();
         }
-        else
+    }
+
+    private void UpdateCircleRadius(LineRenderer lr, float radius)
+    {
+        for (int i = 0; i <= segments; i++)
         {
-            float currentScale = Mathf.Lerp(startRadiusScale, 1.0f, progress);
-            DrawCircle(currentScale);
+            float angle = i * (360f / segments);
+            float rad = angle * Mathf.Deg2Rad;
+            float x = Mathf.Cos(rad) * radius;
+            float y = Mathf.Sin(rad) * radius;
+            lr.SetPosition(i, new Vector3(x, y, 0));
         }
     }
 
@@ -228,31 +276,13 @@ public class BubbleNote : MonoBehaviour
         }
     }
 
-    private void DrawCircle(float scaleRadius)
-    {
-        float xradius = 0.5f * scaleRadius;
-        float yradius = 0.5f * scaleRadius;
-
-        float angle = 20f;
-
-        for (int i = 0; i < (segments + 1); i++)
-        {
-            float x = Mathf.Sin(Mathf.Deg2Rad * angle) * xradius;
-            float y = Mathf.Cos(Mathf.Deg2Rad * angle) * yradius;
-
-            lineRenderer.SetPosition(i, new Vector3(x, y, 0));
-
-            angle += (360f / segments);
-        }
-    }
-
     private void OnMouseDownManual() 
     {
         if (isHit) return;
 
         float timeRemaining = targetTime - Time.time;
         
-        if (Mathf.Abs(timeRemaining) < 0.5f) 
+        if (Mathf.Abs(timeRemaining) < 1.5f) 
         {
             OnHit();
         }
@@ -262,68 +292,29 @@ public class BubbleNote : MonoBehaviour
     {
         isHit = true;
         
-        // [FIX] Shrink-Explode Effect
-        StartCoroutine(ShrinkExplodeEffect());
-        
-        Color effectColor = Color.white;
+        float timeAlive = Time.time - spawnTime;
+        float progress = timeAlive / lifeTime;
+        float currentRadius = Mathf.Lerp(startRadius, targetRadius, progress);
+        float radiusDiff = Mathf.Abs(currentRadius - targetRadius);
 
         if (GameManager.Instance != null)
         {
-            float timeDiff = Mathf.Abs(targetTime - Time.time);
-            
-            if (timeDiff <= 0.15f)
+            if (radiusDiff <= 0.25f) // Perfect
             {
                 GameManager.Instance.AddPerfect(transform.position);
-                effectColor = new Color(0, 1, 1); // Cyan
             }
-            else if (timeDiff <= 0.3f)
+            else if (radiusDiff <= 0.6f) // Great
             {
                 GameManager.Instance.AddGreat(transform.position);
-                effectColor = Color.green;
             }
-            else
+            else // Good
             {
                 GameManager.Instance.AddBad(transform.position);
-                effectColor = new Color(1, 0.5f, 0); // Orange
             }
         }
         
-        GameObject splashObj = new GameObject("SplashEffect");
-        splashObj.transform.position = transform.position;
-        // Basic Particle System
-        ParticleSystem ps = splashObj.AddComponent<ParticleSystem>();
-        var renderer = splashObj.GetComponent<ParticleSystemRenderer>();
-        
-        // [FIX] Assign Material to prevent Pink "Missing Material" Glitch
-        renderer.material = new Material(Shader.Find("Sprites/Default")); 
-        
-        // [FIX] Particle Refinement: "Small Glowing Dots"
-        var main = ps.main;
-        main.startColor = effectColor;
-        // Small glowing dots
-        main.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 4f); 
-        main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.15f); // Tiny dots
-        main.startLifetime = 0.4f; // Short life (0.4s)
-        main.loop = false;
-        
-        var emission = ps.emission;
-        emission.enabled = true;
-        emission.rateOverTime = 0; // Burst only
-        emission.SetBursts(new ParticleSystem.Burst[]{ new ParticleSystem.Burst(0f, 15) }); // 15 particles
-
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.3f; // Small source radius
-        
-        // Disable Velocity over Lifetime defaults if any, to ensure "Burst" feel
-        var vel = ps.velocityOverLifetime;
-        vel.enabled = true;
-        vel.space = ParticleSystemSimulationSpace.Local; // Fix mismatch error
-        vel.radial = 1f; // Explode outward
-        
-        // Cleanup
-        Destroy(splashObj, 1.5f);
-        Destroy(gameObject);
+        // [FIX] 코루틴 없이 즉시 삭제
+        DestroyImmediately();
     }
 
     private void OnMiss()
@@ -332,43 +323,61 @@ public class BubbleNote : MonoBehaviour
         {
             GameManager.Instance.AddMiss(transform.position); 
         }
-        Destroy(gameObject);
+        
+        // [FIX] 코루틴 없이 즉시 삭제
+        DestroyImmediately();
     }
 
-    // [FIX] Shrink-Explode Visual Effect
-    private System.Collections.IEnumerator ShrinkExplodeEffect()
+    private void DestroyImmediately()
     {
-        Vector3 originalScale = transform.localScale;
-        float shrinkDuration = 0.1f;
-        float explodeDuration = 0.15f;
-        
-        // Phase 1: Shrink to 70%
-        float elapsed = 0;
-        while (elapsed < shrinkDuration)
+        // 모든 LineRenderer 즉시 비활성화 및 제거
+        if (outerRing != null)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / shrinkDuration;
-            transform.localScale = Vector3.Lerp(originalScale, originalScale * 0.7f, t);
-            yield return null;
+            outerRing.enabled = false;
+            outerRing.startColor = Color.clear;
+            outerRing.endColor = Color.clear;
         }
         
-        // Phase 2: Explode to 150% then fade
-        elapsed = 0;
-        while (elapsed < explodeDuration)
+        if (targetRing != null)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / explodeDuration;
-            transform.localScale = Vector3.Lerp(originalScale * 0.7f, originalScale * 1.5f, t);
-            
-            // Fade out renderer
-            var rend = GetComponent<Renderer>();
-            if (rend != null && rend.material != null)
+            targetRing.enabled = false;
+            targetRing.startColor = Color.clear;
+            targetRing.endColor = Color.clear;
+        }
+        
+        if (flashRing != null)
+        {
+            flashRing.enabled = false;
+            flashRing.startColor = Color.clear;
+            flashRing.endColor = Color.clear;
+        }
+        
+        // 파티클 즉시 정리
+        if (glowParticles != null)
+        {
+            glowParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+        
+        // 모든 Renderer 비활성화
+        Renderer[] allRenderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in allRenderers)
+        {
+            if (r != null) r.enabled = false;
+        }
+        
+        // 모든 LineRenderer 비활성화
+        LineRenderer[] allLines = GetComponentsInChildren<LineRenderer>();
+        foreach (LineRenderer lr in allLines)
+        {
+            if (lr != null)
             {
-                Color c = rend.material.color;
-                c.a = Mathf.Lerp(0.7f, 0f, t); // Start from 70% opacity
-                rend.material.color = c;
+                lr.enabled = false;
+                lr.startColor = Color.clear;
+                lr.endColor = Color.clear;
             }
-            yield return null;
         }
+        
+        // 즉시 삭제
+        Destroy(gameObject);
     }
 }

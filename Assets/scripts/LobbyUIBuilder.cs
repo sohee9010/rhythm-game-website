@@ -3,24 +3,24 @@ using UnityEngine.UI;
 using TMPro;
 
 [RequireComponent(typeof(LobbyManager))]
-[ExecuteAlways] // ?�디?�에?�도 ?�크립트가 ?�아가�???
+[ExecuteAlways] // ?韒�?域�?嶅� ?欠�謔踫䂻穈� ?嵸�穈�窶???
 public class LobbyUIBuilder : MonoBehaviour
 {
     [Header("Custom UI Images")]
-    public Sprite borderSprite; // 게임 ?�두�?(?�요?�으�?비워?�세??
-    public Sprite titleLogoSprite; // ?�?��? 로고 ?��?지
-    public Sprite startButtonSprite; // 게임 ?�작 버튼 ?��?지
-    public Sprite quitButtonSprite; // 게임 종료 버튼 ?��?지
+    public Sprite borderSprite; // 窶嵸� ?𣕑�謔?(?��?�尐諰?赬��?韠�??
+    public Sprite titleLogoSprite; // ?�?渣? 諢𨁈� ?渠?鴔�
+    public Sprite startButtonSprite; // 窶嵸� ?𨰰� 貒�𢩦 ?渠?鴔�
+    public Sprite quitButtonSprite; // 窶嵸� 鮈�� 貒�𢩦 ?渠?鴔�
 
     [Header("UI Settings")]
-    public Vector2 logoSize = new Vector2(1100, 1100); // 로고 ?�기
-    public Vector2 startButtonSize = new Vector2(1000, 1000); // ?�작 버튼 ?�기
-    public Vector2 quitButtonSize = new Vector2(1000, 1000); // 종료 버튼 ?�기
+    public Vector2 logoSize = new Vector2(1100, 1100); // 諢𨁈� ?禹萼
+    public Vector2 startButtonSize = new Vector2(1000, 1000); // ?𨰰� 貒�𢩦 ?禹萼
+    public Vector2 quitButtonSize = new Vector2(1000, 1000); // 鮈�� 貒�𢩦 ?禹萼
     
     [Header("UI Positions")]
-    public Vector2 logoPosition = Vector2.zero; // 로고 ?�치
-    public Vector2 startButtonPosition = new Vector2(0, -170); // ?�작 버튼 ?�치
-    public Vector2 quitButtonPosition = new Vector2(0, -400); // 종료 버튼 ?�치
+    public Vector2 logoPosition = Vector2.zero; // 諢𨁈� ?��
+    public Vector2 startButtonPosition = new Vector2(0, -170); // ?𨰰� 貒�𢩦 ?��
+    public Vector2 quitButtonPosition = new Vector2(0, -400); // 鮈�� 貒�𢩦 ?��
 
     private bool _isDirty = false;
 
@@ -28,31 +28,18 @@ public class LobbyUIBuilder : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            // NetworkManager ?�으�??�성
+            // NetworkManager 생성
             if (Object.FindFirstObjectByType<NetworkManager>() == null)
             {
                 new GameObject("NetworkManager").AddComponent<NetworkManager>();
             }
 
-            BuildUI();
+            // [DISABLED] 모든 UI 조작 비활성화 - FixAllButtons가 처리함
+            // BuildUI();
+            // SetGameReady();
+            // StartButton, QuitButton 숨김 로직 제거됨
 
-            // [MODIFIED] ?��? ?�청?�로 ?�당 버튼??�??�널 강제 비활?�화
-            // 초기 ?�태: 메인 메뉴 (Start 버튼 ?�시) -> ?�거
-            // SetGameReady(true);
-            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
-            if (canvas != null)
-            {
-                 GameObject startBtn = FindChild(canvas.gameObject, "StartButton");
-                 if (startBtn != null) startBtn.SetActive(false); // ?�성??X -> 비활?�화
-
-                 GameObject quitBtn = FindChild(canvas.gameObject, "QuitButton");
-                 if (quitBtn != null) quitBtn.SetActive(false); // ?�성??X -> 비활?�화
-
-                 GameObject panel = FindChild(canvas.gameObject, "ConnectionPanel");
-                 if (panel != null) panel.SetActive(false); // 비활?�화
-            }
-
-            // ?�벤???�결
+            // 네트워크 이벤트
             NetworkManager net = Object.FindFirstObjectByType<NetworkManager>();
             if (net != null)
             {
@@ -63,7 +50,7 @@ public class LobbyUIBuilder : MonoBehaviour
 
     private void OnClientConnected()
     {
-        // ?�결?�면 바로 ?�작?��? ?�고 카운?�다???�작
+        // ?國盒?䁪庖 諻竾� ?𨰰�?䁯? ?𢤹� 儦渥𠂔?賈𠹻???𨰰�
         Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
         {
@@ -83,7 +70,7 @@ public class LobbyUIBuilder : MonoBehaviour
         GameObject txtObj = FindChild(card, "InfoText");
         TextMeshProUGUI txt = (txtObj != null) ? txtObj.GetComponent<TextMeshProUGUI>() : null;
         
-        // QR 코드 ?��?지???�기�?(깔끔?�게)
+        // QR 儠竾 ?渠?鴔???刷萼篣?(篧竾?瞘)
         GameObject qrObj = FindChild(card, "QRCode");
         if (qrObj != null) qrObj.SetActive(false);
 
@@ -108,12 +95,12 @@ public class LobbyUIBuilder : MonoBehaviour
         NetworkManager net = NetworkManager.Instance;
         if (net != null && net.isConnected)
         {
-            // ?��? ?�결?�어 ?�으�?바로 ?�작
+            // ?渠? ?國盒?䁯𩸭 ?�尐諰?諻竾� ?𨰰�
             GetComponent<LobbyManager>().StartGame();
         }
         else
         {
-            // ?�결 ???�어 ?�으�?QR 코드 ?�널 ?�시
+            // ?國盒 ???䁯𩸭 ?�尐諰?QR 儠竾� ?刺� ?𨰰�
             SetGameReady(false);
         }
     }
@@ -132,13 +119,13 @@ public class LobbyUIBuilder : MonoBehaviour
 
     private void OnValidate()
     {
-        // ?�스?�터?�서 값이 바뀌면 갱신 ?�약
+        // ?賄擪?軭�?韠� 穈𨩆𦚯 諻竾�𣕑庖 穈桿� ?�烄
         _isDirty = true;
     }
 
     private void Update()
     {
-        // ?�디??모드???�만, 값이 바뀌었?�면 UI ?�시 그리�?
+        // ?韒�??諈刺�???𣕑�, 穈𨩆𦚯 諻竾�嵸�?潺庖 UI ?木� 篞賈收篣?
         if (!Application.isPlaying && _isDirty)
         {
             _isDirty = false;
@@ -149,7 +136,7 @@ public class LobbyUIBuilder : MonoBehaviour
     [ContextMenu("Build Lobby UI")]
     public void BuildUI()
     {
-        // 1. Canvas 찾기 ?�는 ?�성
+        // 1. Canvas 麆樽萼 ?韒� ?吖�
         Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
@@ -164,7 +151,7 @@ public class LobbyUIBuilder : MonoBehaviour
             scaler.matchWidthOrHeight = 0.5f;
         }
 
-        // 1.5 EventSystem 찾기 ?�는 ?�성 (UI ?�릭 ?�수?�소)
+        // 1.5 EventSystem 麆樽萼 ?韒� ?吖� (UI ?渠早 ?��?䇹�)
         if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
             GameObject eventSystem = new GameObject("EventSystem");
@@ -172,7 +159,7 @@ public class LobbyUIBuilder : MonoBehaviour
             eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
-        // 2. 배경 (Panel)
+        // 2. 諻國祭 (Panel)
         GameObject bgObj = FindChild(canvas.gameObject, "BackgroundPanel");
         if (bgObj == null)
         {
@@ -189,7 +176,7 @@ public class LobbyUIBuilder : MonoBehaviour
         }
         bgObj.transform.SetAsFirstSibling();
 
-        // [NEW] 게임 ?�두�?(Border)
+        // [NEW] 窶嵸� ?𣕑�謔?(Border)
         if (borderSprite != null)
         {
             GameObject borderObj = FindChild(canvas.gameObject, "GameBorder");
@@ -209,7 +196,7 @@ public class LobbyUIBuilder : MonoBehaviour
             }
         }
 
-        // [NEW] 3D 배경 ?�성
+        // [NEW] 3D 諻國祭 ?吖�
         Create3DBackground();
 
 #if UNITY_EDITOR
@@ -217,7 +204,7 @@ public class LobbyUIBuilder : MonoBehaviour
         MakeTextureReadable(quitButtonSprite);
 #endif
 
-        // 3. ?�?��? (Text or Logo Image)
+        // 3. ?�?渣? (Text or Logo Image)
         GameObject titleObj = FindChild(canvas.gameObject, "TitleText");
         if (titleObj == null)
         {
@@ -240,7 +227,7 @@ public class LobbyUIBuilder : MonoBehaviour
             
             img.sprite = titleLogoSprite;
             img.preserveAspect = true; 
-            // ?�이�??�정 (?�용??지??
+            // ?科𦚯鴞??木� (?科鹻??鴔�??
             titleObj.GetComponent<RectTransform>().sizeDelta = logoSize; 
             titleObj.GetComponent<RectTransform>().anchoredPosition = logoPosition;
         }
@@ -277,25 +264,25 @@ public class LobbyUIBuilder : MonoBehaviour
             titleObj.GetComponent<RectTransform>().anchoredPosition = logoPosition;
         }
 
-        // [MODIFIED] ?��? ?�청?�로 ?�동 ?�성 비활?�화
-        // [NEW] ?�결 ?��??�면 (QR 코드) -> ?�동 ?�성 ??
+        // [MODIFIED] ?𥔱? ?䇹痍?潺� ?韒� ?吖� 赬��?桶�
+        // [NEW] ?國盒 ?�篣??竾庖 (QR 儠竾�) -> ?韒� ?吖� ??
         // CreateConnectionPanel(canvas.transform);
 
-        // 4. ?�작 버튼 (?��?지 지?? ?�이�??�치 조절 가?? -> ?�동 ?�성 ??
+        // 4. ?𨰰� 貒�𢩦 (?渠?鴔� 鴔�?? ?科𦚯鴞??�� 魽域� 穈�?? -> ?韒� ?吖� ??
         /*
         CreateButton(canvas.transform, "StartButton", "START GAME", startButtonPosition, new Color(0.2f, 0.2f, 0.2f), new Color(0f, 1f, 0.5f), startButtonSprite, startButtonSize, () => {
             OnStartButtonClicked();
         });
         */
 
-        // 5. 종료 버튼 (?��?지 지?? ?�이�??�치 조절 가?? -> ?�동 ?�성 ??
+        // 5. 鮈�� 貒�𢩦 (?渠?鴔� 鴔�?? ?科𦚯鴞??�� 魽域� 穈�?? -> ?韒� ?吖� ??
         /*
         CreateButton(canvas.transform, "QuitButton", "EXIT", quitButtonPosition, new Color(0.2f, 0.2f, 0.2f), new Color(1f, 0.2f, 0.5f), quitButtonSprite, quitButtonSize, () => {
             GetComponent<LobbyManager>().QuitGame();
         });
         */
         
-        // 카메???�랄?�스 ?�과
+        // 儦渠�???𣕑�?軤擪 ?刷頃
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
@@ -316,7 +303,7 @@ public class LobbyUIBuilder : MonoBehaviour
             panelObj = new GameObject("ConnectionPanel");
             panelObj.transform.SetParent(parent, false);
             
-            // 1. ?�체 ?�면 배경 (?�두??반투�?
+            // 1. ?�眼 ?竾庖 諻國祭 (?渠�??諻属�諈?
             Image img = panelObj.AddComponent<Image>();
             img.color = new Color(0, 0, 0, 0.9f);
             
@@ -326,22 +313,22 @@ public class LobbyUIBuilder : MonoBehaviour
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // 2. 카드 배경 (중앙 ?�렬)
+            // 2. 儦渠� 諻國祭 (鴗𡢾� ?瑅䁥)
             GameObject cardObj = new GameObject("CardBackground");
             cardObj.transform.SetParent(panelObj.transform, false);
             Image cardImg = cardObj.AddComponent<Image>();
-            cardImg.color = new Color(0.15f, 0.15f, 0.2f, 1f); // ?�크 블루 그레??
+            cardImg.color = new Color(0.15f, 0.15f, 0.2f, 1f); // ?欠� 賳竾ㄗ 篞賈�??
             
-            // ?�근 모서�??�과 (Outline 컴포?�트�??�체하거나 ?�프?�이???�요, ?�기???�상�?
-            if (borderSprite != null) cardImg.sprite = borderSprite; // ?�두�??�프?�이???�활??가?�하�??�용
+            // ?伉滂 諈到�謔??刷頃 (Outline 儢渣𡢢?龲䂻諢??�麮渣�穇圉� ?欠�?潰𦚯???��, ?禹萼???吣�諤?
+            if (borderSprite != null) cardImg.sprite = borderSprite; // ?𣕑�謔??欠�?潰𦚯???秒�??穈�?伕�諰??科鹻
 
             RectTransform cardRt = cardObj.GetComponent<RectTransform>();
             cardRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardRt.anchorMax = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(800, 900); // 카드 ?�기
+            cardRt.sizeDelta = new Vector2(800, 900); // 儦渠� ?禹萼
             cardRt.anchoredPosition = Vector2.zero;
 
-            // 3. QR 코드 ?��?지
+            // 3. QR 儠竾� ?渠?鴔�
             GameObject qrObj = new GameObject("QRCode");
             qrObj.transform.SetParent(cardObj.transform, false);
             RawImage qrImg = qrObj.AddComponent<RawImage>();
@@ -359,7 +346,7 @@ public class LobbyUIBuilder : MonoBehaviour
             }
             qrObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 50);
 
-            // 4. ?�내 ?�스??
+            // 4. ?�� ?𣽁擪??
             GameObject txtObj = new GameObject("InfoText");
             txtObj.transform.SetParent(cardObj.transform, false);
             TextMeshProUGUI txt = txtObj.AddComponent<TextMeshProUGUI>();
@@ -373,7 +360,7 @@ public class LobbyUIBuilder : MonoBehaviour
             txtRt.anchoredPosition = new Vector2(0, 350);
             txtRt.sizeDelta = new Vector2(700, 100);
 
-            // 5. ?�브 ?�스??
+            // 5. ?嶅� ?𣽁擪??
             GameObject subTxtObj = new GameObject("SubText");
             subTxtObj.transform.SetParent(cardObj.transform, false);
             TextMeshProUGUI subTxt = subTxtObj.AddComponent<TextMeshProUGUI>();
@@ -386,14 +373,14 @@ public class LobbyUIBuilder : MonoBehaviour
             subTxtRt.anchoredPosition = new Vector2(0, -250);
             subTxtRt.sizeDelta = new Vector2(700, 100);
 
-            // 6. 취소 버튼
+            // 6. 鼒到� 貒�𢩦
             CreateButton(cardObj.transform, "CancelButton", "CANCEL", new Vector2(0, -380), new Color(0.3f, 0.3f, 0.3f), Color.white, null, new Vector2(300, 80), () => {
-                SetGameReady(true); // ?�시 메인?�로
+                SetGameReady(true); // ?木� 諰䇹𥘵?潺�
             });
         }
         else
         {
-            // ?��? 존재?�면 QR 코드 ?��?지�?갱신 ?�도
+            // ?渠? 魽渥�?䁪庖 QR 儠竾� ?渠?鴔�諤?穈桿� ?嶅�
             Transform cardTrans = panelObj.transform.Find("CardBackground");
             if (cardTrans != null)
             {
@@ -418,13 +405,13 @@ public class LobbyUIBuilder : MonoBehaviour
             
             Image img = btnObj.AddComponent<Image>();
             
-            // ?��?지가 ?�으�??��?지 ?�용, ?�으�??�상 ?�용
+            // ?渠?鴔�穈� ?�尐諰??渠?鴔� ?科鹻, ?�尐諰??吣� ?科鹻
             if (sprite != null)
             {
                 img.sprite = sprite;
-                img.color = Color.white; // ?��?지가 ?�으�??�색(?�본??
+                img.color = Color.white; // ?渠?鴔�穈� ?�尐諰??域�(?韒雩??
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?�명??부�??�릭 무시
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?禺�??賱�賱??渠早 諡渥�
             }
             else
             {
@@ -433,7 +420,7 @@ public class LobbyUIBuilder : MonoBehaviour
 
             Button btn = btnObj.AddComponent<Button>();
 
-            // ?�스??(?��?지가 ?�을 ?�만 ?�성)
+            // ?𣽁擪??(?渠?鴔�穈� ?�� ?𣕑� ?吖�)
             GameObject txtObj = FindChild(btnObj, "Text");
             if (sprite == null)
             {
@@ -457,14 +444,14 @@ public class LobbyUIBuilder : MonoBehaviour
             }
             else
             {
-                // ?��?지가 ?�는???�스???�브?�트가 ?�아?�으�???�� (깔끔?�게)
+                // ?渠?鴔�穈� ?��???𣽁擪???月�?𠺝䂻穈� ?到�?�尐諰???� (篧竾�?瞘�)
                 if (txtObj != null) DestroyImmediate(txtObj);
             }
 
             RectTransform rt = btnObj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f); 
             rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = size; // ?�용??지???�이�??�용
+            rt.sizeDelta = size; // ?科鹻??鴔�???科𦚯鴞??�鹻
             rt.anchoredPosition = position;
             
             ColorBlock colors = btn.colors;
@@ -486,7 +473,7 @@ public class LobbyUIBuilder : MonoBehaviour
         }
         else
         {
-            // ?��? 존재?????�데?�트 로직
+            // ?渠? 魽渥�?????�㫲?渣䂻 諢𨰰�
             Image img = btnObj.GetComponent<Image>();
             GameObject txtObj = FindChild(btnObj, "Text");
 
@@ -495,29 +482,29 @@ public class LobbyUIBuilder : MonoBehaviour
                 img.sprite = sprite;
                 img.color = Color.white;
                 img.preserveAspect = true;
-                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?�명??부�??�릭 무시
+                img.alphaHitTestMinimumThreshold = 0.1f; // [FIX] ?禺�??賱�賱??渠早 諡渥�
                 if (txtObj != null) DestroyImmediate(txtObj);
             }
             
-            // ?�이�??�데?�트
+            // ?科𦚯鴞??�㫲?渣䂻
             RectTransform rt = btnObj.GetComponent<RectTransform>();
             if (rt != null) 
             {
                 rt.sizeDelta = size;
-                rt.anchoredPosition = position; // [FIX] ?�치??같이 ?�데?�트
+                rt.anchoredPosition = position; // [FIX] ?��??穈軤𦚯 ?�㫲?渣䂻
             }
 
-            // 그림???�웃?�인 ?�거 (깔끔?�게)
+            // 篞賈汝???��?潰𥘵 ?𨁈掠 (篧竾�?瞘�)
             Shadow shadow = btnObj.GetComponent<Shadow>();
             if (shadow != null) DestroyImmediate(shadow);
             Outline outline = btnObj.GetComponent<Outline>();
             if (outline != null) DestroyImmediate(outline);
             
-            // ?��???리스???�연�?
+            // ?堅???謔科擪???科㜊窶?
             Button btn = btnObj.GetComponent<Button>();
             if (btn != null)
             {
-                // [FIX] 버튼 ?�상 ?�태??같이 ?�데?�트?�야 ??
+                // [FIX] 貒�𢩦 ?吣� ?��??穈軤𦚯 ?�㫲?渣䂻?渥焩 ??
                 ColorBlock colors = btn.colors;
                 if (sprite != null)
                 {
@@ -528,8 +515,8 @@ public class LobbyUIBuilder : MonoBehaviour
                 }
                 else
                 {
-                    // ?��?지가 ?�으�?배경???�용 (기존 로직 ?��? ?�는 ?�데?�트)
-                    // ?�기?�는 굳이 건드리�? ?�아???��?�? ?�실?�게 ?�려�??�데?�트
+                    // ?渠?鴔�穈� ?�尐諰?諻國祭???科鹻 (篣域● 諢𨰰� ?𥔱? ?韒� ?�㫲?渣䂻)
+                    // ?禹萼?嶅� 窱喬𦚯 穇渠�謔科? ?𥇣�???䁯?諤? ?㻂𠹻?瞘� ?䁪𨸹諰??�㫲?渣䂻
                 }
                 btn.colors = colors;
 
@@ -538,7 +525,7 @@ public class LobbyUIBuilder : MonoBehaviour
             }
         }
         
-        // ?�전?�치
+        // ?��?伊�
         Button buttonComponent = btnObj.GetComponent<Button>();
         if (buttonComponent != null)
         {
@@ -549,14 +536,14 @@ public class LobbyUIBuilder : MonoBehaviour
 
     private void Create3DBackground()
     {
-        // 기존???�성??3D 배경???�다�???�� (?�교 모델???�기 ?�해 비워??
+        // 篣域●???吖�??3D 諻國祭???�𠹻諰???� (?軎� 諈刺桊???�萼 ?�㟲 赬��??
         GameObject oldBg = GameObject.Find("Background3D");
         if (oldBg != null)
         {
             DestroyImmediate(oldBg);
         }
         
-        // ?�기??school.fbx�?배치?�시�??�니??
+        // ?禹萼??school.fbx諝?諻域�?䁯�諰??拘�??
     }
 
     private GameObject FindChild(GameObject parent, string name)

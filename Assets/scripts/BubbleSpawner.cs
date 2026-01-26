@@ -19,9 +19,9 @@ public class BubbleSpawner : MonoBehaviour
     public float fixedZ = 10f;
 
     [Header("Timing")]
-    public float lifeTime = 2.0f; 
+    public float lifeTime = 1.8f; // [조정] 더 빠른 수축 (3.0 → 1.8)
     [Range(0f, 1f)]
-    public float spawnDensity = 0.8f; 
+    public float spawnDensity = 0.25f; // [조정] 더 적은 노트 (0.4 → 0.25) 
 
     [Header("Beatmap (Game_first)")]
     public BeatmapData beatmap;
@@ -203,19 +203,25 @@ public class BubbleSpawner : MonoBehaviour
         bubble.transform.localScale = Vector3.one * randomScale;
         activeBubbles.Add(bubble.transform);
 
-        if (bubbleMaterials != null && bubbleMaterials.Length > 0)
+        // [FIX] 기존 Prefab의 흰색 구슬 메시 제거
+        MeshRenderer meshRenderer = bubble.GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
         {
-            Material randomMat = bubbleMaterials[Random.Range(0, bubbleMaterials.Length)];
-            Renderer rd = bubble.GetComponent<Renderer>();
-            if (rd != null)
-            {
-                rd.material = randomMat;
-            }
+            meshRenderer.enabled = false; // 구슬 메시 비활성화
+        }
+        
+        // 기존 Renderer도 비활성화
+        Renderer rd = bubble.GetComponent<Renderer>();
+        if (rd != null)
+        {
+            rd.enabled = false; // 완전히 숨김
         }
 
+        // Collider는 유지 (클릭 감지용)
         if (bubble.GetComponent<Collider>() == null)
             bubble.AddComponent<SphereCollider>();
 
+        // BubbleNote 스크립트가 자체적으로 육각형 링을 생성
         BubbleNote noteLogic = bubble.AddComponent<BubbleNote>();
         noteLogic.Initialize(lifeTime); 
     }

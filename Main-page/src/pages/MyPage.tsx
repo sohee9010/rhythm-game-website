@@ -149,6 +149,19 @@ const MyPage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
+                    {/* Coin Display */}
+                    <div className="ml-auto bg-black/50 p-4 rounded-xl border border-yellow-500/30 flex items-center gap-4">
+                        <div className="text-right">
+                            <div className="text-xs text-yellow-500 font-bold mb-1">MY COINS</div>
+                            <div className="text-2xl font-bold text-yellow-400">
+                                {currentUser.coins ? currentUser.coins.toLocaleString() : '0'} G
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center text-xl">
+                            🪙
+                        </div>
+                    </div>
                 </div>
 
                 {/* Game Stats Grid */}

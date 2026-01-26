@@ -8,6 +8,8 @@ export interface User {
   email: string
   phone?: string
   address?: string
+  coins?: number
+  inventory?: string[]
 }
 
 interface UserContextType {

@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 
 const Header: React.FC = () => {
-  const location = useLocation()
   const { currentUser, logout } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -20,7 +19,7 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   return (
-    <header className="w-full bg-black/90 backdrop-blur-md border-b border-purple-900/50 sticky top-0 z-50 text-white">
+    <header className="fixed top-0 left-0 right-0 w-full bg-black/90 backdrop-blur-md border-b border-purple-900/50 z-50 text-white">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold tracking-tighter hover:text-purple-400 transition-colors flex items-center gap-2 no-underline text-white">
@@ -33,6 +32,7 @@ const Header: React.FC = () => {
           <Link to="/" className="text-gray-300 hover:text-purple-400 font-medium transition-colors no-underline">HOME</Link>
           <Link to="/game" className="text-gray-300 hover:text-purple-400 font-medium transition-colors no-underline">GAME START</Link>
           <Link to="/ranking" className="text-gray-300 hover:text-purple-400 font-medium transition-colors no-underline">RANKING</Link>
+          <Link to="/payment" className="text-gray-300 hover:text-purple-400 font-medium transition-colors no-underline">💎 SHOP</Link>
 
           {currentUser ? (
             <div className="flex items-center gap-6 ml-4 border-l border-gray-700 pl-6">
@@ -71,6 +71,7 @@ const Header: React.FC = () => {
           <Link to="/" className="text-gray-300 hover:text-purple-400 py-2 block no-underline" onClick={() => setIsMenuOpen(false)}>HOME</Link>
           <Link to="/game" className="text-gray-300 hover:text-purple-400 py-2 block no-underline" onClick={() => setIsMenuOpen(false)}>GAME START</Link>
           <Link to="/ranking" className="text-gray-300 hover:text-purple-400 py-2 block no-underline" onClick={() => setIsMenuOpen(false)}>RANKING</Link>
+          <Link to="/payment" className="text-gray-300 hover:text-purple-400 py-2 block no-underline" onClick={() => setIsMenuOpen(false)}>💎 SHOP</Link>
           {currentUser ? (
             <>
               <Link to="/mypage" className="text-white font-semibold py-2 block no-underline" onClick={() => setIsMenuOpen(false)}>MY PAGE</Link>

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* FORCE ROOT TO BE BLOCK - Fixes Vertical Centering Issue */
+#root {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100vh;
+}
+
 :root {
   /* Neon Rhythm Theme Colors */
   --color-bg-primary: #000000;

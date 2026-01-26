@@ -1,36 +1,56 @@
 import React, { useState, useEffect } from 'react'
+import { supabase } from '../services/supabase'
 
-interface Ranker {
-    rank: number
-    name: string
+interface RankingEntry {
+    id: string
+    user_name: string
+    song_name: string
     score: number
-    avatar: string
-    change: 'up' | 'down' | 'same'
+    max_combo: number
+    perfect: number
+    great: number
+    bad: number
+    miss: number
+    created_at: string
 }
 
 const RankingPage: React.FC = () => {
-    const [rankers, setRankers] = useState<Ranker[]>([])
+    const [rankings, setRankings] = useState<RankingEntry[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedSong, setSelectedSong] = useState<'all' | 'Galaxias' | 'Sodapop'>('all')
 
     useEffect(() => {
-        // Simulate fetching ranking data
-        setTimeout(() => {
-            const mockData: Ranker[] = [
-                { rank: 1, name: 'NeonDancer', score: 1250000, avatar: '🕺', change: 'same' },
-                { rank: 2, name: 'RhythmMaster', score: 1180000, avatar: '🎧', change: 'up' },
-                { rank: 3, name: 'CyberPunk', score: 1150000, avatar: '🤖', change: 'down' },
-                { rank: 4, name: 'GrooveQueen', score: 1050000, avatar: '💃', change: 'same' },
-                { rank: 5, name: 'BeatBoxer', score: 980000, avatar: '🎤', change: 'up' },
-                { rank: 6, name: 'SynthWave', score: 950000, avatar: '🎹', change: 'down' },
-                { rank: 7, name: 'RetroGamer', score: 920000, avatar: '🕹️', change: 'same' },
-                { rank: 8, name: 'LaserLight', score: 890000, avatar: '⚡', change: 'up' },
-                { rank: 9, name: 'BassDrop', score: 850000, avatar: '🔊', change: 'down' },
-                { rank: 10, name: 'VibeCheck', score: 820000, avatar: '✨', change: 'same' },
-            ]
-            setRankers(mockData)
+        fetchRankings()
+    }, [selectedSong])
+
+    const fetchRankings = async () => {
+        setLoading(true)
+        try {
+            let query = supabase
+                .from('ranking')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(10)
+
+            if (selectedSong !== 'all') {
+                query = query.eq('song_name', selectedSong)
+            }
+
+            const { data, error } = await query
+
+            if (error) {
+                console.error('Error fetching rankings:', error)
+                setRankings([])
+            } else {
+                setRankings(data || [])
+            }
+        } catch (error) {
+            console.error('Error:', error)
+            setRankings([])
+        } finally {
             setLoading(false)
-        }, 800)
-    }, [])
+        }
+    }
 
     if (loading) {
         return (
@@ -41,62 +61,111 @@ const RankingPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white py-20 px-4">
+        <div className="min-h-screen bg-black text-white pt-[220px] pb-20 px-4">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-16">
                     <h1 className="text-5xl font-black mb-4 neon-text">GLOBAL RANKING</h1>
-                    <p className="text-gray-400">Top players of the week</p>
+                    <p className="text-gray-400">Top players of all time</p>
+                </div>
+
+                {/* Song Filter */}
+                <div className="flex justify-center gap-4 mb-8">
+                    <button
+                        onClick={() => setSelectedSong('all')}
+                        className={`px-6 py-2 rounded-full font-bold transition-all ${selectedSong === 'all'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            }`}
+                    >
+                        ALL SONGS
+                    </button>
+                    <button
+                        onClick={() => setSelectedSong('Galaxias')}
+                        className={`px-6 py-2 rounded-full font-bold transition-all ${selectedSong === 'Galaxias'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            }`}
+                    >
+                        GALAXIAS
+                    </button>
+                    <button
+                        onClick={() => setSelectedSong('Sodapop')}
+                        className={`px-6 py-2 rounded-full font-bold transition-all ${selectedSong === 'Sodapop'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            }`}
+                    >
+                        SODAPOP
+                    </button>
                 </div>
 
                 <div className="bg-gray-900/50 rounded-2xl border border-gray-800 overflow-hidden backdrop-blur-sm">
                     {/* Header */}
                     <div className="grid grid-cols-12 gap-4 p-6 border-b border-gray-800 text-gray-400 font-bold text-sm uppercase tracking-wider">
-                        <div className="col-span-2 text-center">Rank</div>
-                        <div className="col-span-6">Player</div>
-                        <div className="col-span-4 text-right">Score</div>
+                        <div className="col-span-1 text-center">Rank</div>
+                        <div className="col-span-5 text-center">Player</div>
+                        <div className="col-span-3 text-center">Song</div>
+                        <div className="col-span-3 text-center">Score</div>
                     </div>
 
                     {/* List */}
                     <div className="divide-y divide-gray-800">
-                        {rankers.map((ranker) => (
-                            <div
-                                key={ranker.rank}
-                                className={`grid grid-cols-12 gap-4 p-6 items-center hover:bg-white/5 transition-colors ${ranker.rank <= 3 ? 'bg-purple-900/10' : ''
-                                    }`}
-                            >
-                                <div className="col-span-2 flex items-center justify-center gap-2">
-                                    <span className={`text-2xl font-bold ${ranker.rank === 1 ? 'text-yellow-400' :
-                                            ranker.rank === 2 ? 'text-gray-300' :
-                                                ranker.rank === 3 ? 'text-amber-600' :
-                                                    'text-gray-500'
-                                        }`}>
-                                        {ranker.rank}
-                                    </span>
-                                    {ranker.change === 'up' && <span className="text-green-500 text-xs">▲</span>}
-                                    {ranker.change === 'down' && <span className="text-red-500 text-xs">▼</span>}
-                                    {ranker.change === 'same' && <span className="text-gray-600 text-xs">-</span>}
-                                </div>
-                                <div className="col-span-6 flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-xl">
-                                        {ranker.avatar}
-                                    </div>
-                                    <span className={`font-bold ${ranker.rank <= 3 ? 'text-white' : 'text-gray-300'}`}>
-                                        {ranker.name}
-                                    </span>
-                                </div>
-                                <div className="col-span-4 text-right font-mono text-xl text-purple-400 font-bold">
-                                    {ranker.score.toLocaleString()}
-                                </div>
+                        {rankings.length === 0 ? (
+                            <div className="p-12 text-center text-gray-500">
+                                <p className="text-xl">No rankings yet!</p>
+                                <p className="text-sm mt-2">Play a game to be the first on the leaderboard.</p>
                             </div>
-                        ))}
+                        ) : (
+                            rankings.map((entry, index) => (
+                                <div
+                                    key={entry.id}
+                                    className={`grid grid-cols-12 gap-4 p-6 items-center hover:bg-white/5 transition-colors ${index < 3 ? 'bg-purple-900/10' : ''
+                                        }`}
+                                >
+                                    {/* Rank */}
+                                    <div className="col-span-1 flex items-center justify-center">
+                                        <span
+                                            className={`text-2xl font-bold ${index === 0
+                                                ? 'text-yellow-400'
+                                                : index === 1
+                                                    ? 'text-gray-300'
+                                                    : index === 2
+                                                        ? 'text-amber-600'
+                                                        : 'text-gray-500'
+                                                }`}
+                                        >
+                                            {index + 1}
+                                        </span>
+                                    </div>
+
+                                    {/* Player Name (Centered) */}
+                                    <div className="col-span-5 flex items-center justify-center">
+                                        <span className={`font-bold text-lg ${index < 3 ? 'text-white' : 'text-gray-300'}`}>
+                                            {entry.user_name}
+                                        </span>
+                                    </div>
+
+                                    {/* Song */}
+                                    <div className="col-span-3 text-center">
+                                        <span className="text-sm text-gray-400">{entry.song_name}</span>
+                                    </div>
+
+                                    {/* Score */}
+                                    <div className="col-span-3 text-center font-mono text-xl text-purple-400 font-bold">
+                                        {entry.score.toLocaleString()}
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
-                <div className="mt-12 text-center">
-                    <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors border border-gray-700">
-                        Load More
-                    </button>
-                </div>
+                {/* Stats Info */}
+                {rankings.length > 0 && (
+                    <div className="mt-8 text-center text-gray-500 text-sm">
+                        <p>Showing top {rankings.length} players</p>
+                    </div>
+                )}
             </div>
         </div>
     )

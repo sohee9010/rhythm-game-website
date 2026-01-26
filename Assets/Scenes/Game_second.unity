@@ -5213,9 +5213,9 @@ MonoBehaviour:
   timerText: {fileID: 0}
   musicSources: []
   sfxSource: {fileID: 0}
-  gameMusic: {fileID: 8300000, guid: c6be14bd5a1e2b74e88c2cfd4c67d855, type: 3}
+  gameMusic: {fileID: 8300000, guid: ac95bb2f689afa2459f37cea910a076e, type: 3}
   galaxiasMusic: {fileID: 0}
-  sodapopMusic: {fileID: 8300000, guid: c6be14bd5a1e2b74e88c2cfd4c67d855, type: 3}
+  sodapopMusic: {fileID: 8300000, guid: ac95bb2f689afa2459f37cea910a076e, type: 3}
   perfectCount: 0
   greatCount: 0
   badCount: 0
@@ -26673,7 +26673,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 447f3eb78c25e224692102f2fe5a9bb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  laneKeys: 64000000660000006a0000006b000000
   hitZones: []
   hitRadius: 0.5
 --- !u!1 &2065457810 stripped

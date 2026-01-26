@@ -8,8 +8,8 @@ public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
 
-    [Header("Key Settings")]
-    public KeyCode[] laneKeys = { KeyCode.D, KeyCode.F, KeyCode.J, KeyCode.K };
+    // [Header("Key Settings")]
+    // public KeyCode[] laneKeys = { KeyCode.D, KeyCode.F, KeyCode.J, KeyCode.K }; // 키보드 미지원
 
     [Header("Hit Zones")]
     public Transform[] hitZones; // 판정선 위치 (4개)
@@ -41,16 +41,7 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
-        
-        for (int i = 0; i < laneKeys.Length; i++)
-        {
-            if (Input.GetKeyDown(laneKeys[i]))
-            {
-                CheckHit(i);
-                ShowHitEffect(i);
-            }
-        }
+        // 키보드 입력 제거됨 (마우스/터치 및 모바일 컨트롤러 전용)
     }
 
     private void CheckHit(int laneIndex)
@@ -86,11 +77,55 @@ public class InputManager : MonoBehaviour
         Debug.Log($"Lane {laneIndex} Key Pressed");
     }
 
-    // 외부(네트워크 등)에서 입력을 발생시키는 함수
+    // 레인 트리거 (외부 호출용) -> 99번은 Auto-Aim으로 처리
     public void TriggerLane(int laneIndex)
     {
         if (GameManager.Instance == null || GameManager.Instance.isPaused) return;
-        CheckHit(laneIndex);
-        ShowHitEffect(laneIndex);
+
+        if (laneIndex == 99)
+        {
+            CheckAutoHit();
+        }
+        else
+        {
+            CheckHit(laneIndex);
+            ShowHitEffect(laneIndex);
+        }
+    }
+
+    private void CheckAutoHit()
+    {
+        // 모든 레인의 노트를 검사하여 가장 가까운 것 찾기
+        Note[] notes = Object.FindObjectsByType<Note>(FindObjectsSortMode.None);
+        
+        Note closestNote = null;
+        float minDistance = float.MaxValue;
+        int targetLane = -1;
+
+        foreach (Note note in notes)
+        {
+            // 각 노트의 해당 레인 판정선과의 거리
+            float distance = Mathf.Abs(note.transform.position.y - hitZones[note.lane].position.y);
+            
+            // 더 가까운 노트 발견
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestNote = note;
+                targetLane = note.lane;
+            }
+        }
+
+        // 판정 범위 내에 들어왔으면 Hit!
+        if (closestNote != null && minDistance < hitRadius)
+        {
+            closestNote.OnHit();
+            ShowHitEffect(targetLane);
+            Debug.Log($"[Auto-Aim] Hit Lane {targetLane} (Dist: {minDistance:F2})");
+        }
+        else
+        {
+            Debug.Log("[Auto-Aim] No hittable note found.");
+        }
     }
 }

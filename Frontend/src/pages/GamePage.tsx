@@ -28,6 +28,12 @@ const GamePage: React.FC = () => {
             const gameWindow = iframeRef.current?.contentWindow as any;
             if (gameWindow && gameWindow.gameInstance) {
                 gameWindow.gameInstance.SendMessage("NetworkManager", "ReceiveInput", "CONNECT");
+
+                // [NEW] Send User Data
+                const userData = sessionStorage.getItem('currentUser');
+                if (userData) {
+                    gameWindow.gameInstance.SendMessage("NetworkManager", "ReceiveReactLogin", userData);
+                }
             }
         });
 
@@ -42,7 +48,49 @@ const GamePage: React.FC = () => {
             }
         });
 
+        // [NEW] Payment Listener from Unity
+        const handleMessage = async (event: MessageEvent) => {
+            if (event.data && event.data.type === 'OPEN_PAYMENT') {
+                console.log("[React] Received Payment Request:", event.data);
+                const { amount, orderName } = event.data;
+                const user = sessionStorage.getItem('currentUser');
+
+                let customerName = 'Guest';
+                let customerEmail = '';
+
+                if (user) {
+                    try {
+                        const u = JSON.parse(user);
+                        customerName = u.name || 'Guest';
+                        customerEmail = u.email || '';
+                    } catch (e) { }
+                }
+
+                // Import tossPaymentsService dynamically or use global if available
+                const { tossPaymentsService } = await import('../services/tossPayments');
+
+                try {
+                    await tossPaymentsService.requestPayment({
+                        amount: amount,
+                        orderId: tossPaymentsService.generateOrderId(),
+                        orderName: orderName,
+                        customerName: customerName,
+                        customerEmail: customerEmail,
+                        successUrl: window.location.origin + '/payment/success',
+                        failUrl: window.location.origin + '/payment/fail',
+                        customerMobilePhone: undefined // Optional
+                    });
+                } catch (err) {
+                    console.error("[React] Payment Failed:", err);
+                    alert("Payment Failed to Init");
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
         return () => {
+            window.removeEventListener('message', handleMessage);
             window.removeEventListener('beforeunload', handleBeforeUnload);
             socket.disconnect();
         };
@@ -50,8 +98,8 @@ const GamePage: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen overflow-hidden bg-black p-4">
-            <h1 className="text-2xl text-white font-bold mb-2">Step up</h1>
-            <div className="w-full max-w-[1280px] aspect-video relative group shadow-2xl">
+            <h1 className="text-2xl text-white font-bold mb-2 hidden md:block">Step up</h1>
+            <div className="w-full max-w-[1600px] h-[85vh] relative group shadow-2xl">
                 <button
                     onClick={() => {
                         const iframe = iframeRef.current;

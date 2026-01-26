@@ -14,8 +14,11 @@ public class GameManager : MonoBehaviour
     [Header("Scene Settings")]
     public bool isSecondScene = false;   // Game_second 씬인지 여부
 
-    [Header("Result UI Assets")]
-    public Sprite[] resultAlbumArt; // [0]=Scene1, [1]=Scene2... Album Arts for Result Screen (0: Galaxias, 1: Sodapop)
+    [Header("============ RESULT SCREEN IMAGES ============")]
+    [Tooltip("여기에 결과창 앨범 아트를 넣어주세요 (Size 2). 0번: Galaxias, 1번: Sodapop")]
+    public Sprite[] resultAlbumArt; 
+    
+    [Header("Result UI Text")]
     public string[] songTitles = { "GALAXIAS!", "Sodapop" };
     
     [Header("Result UI Colors")]
@@ -265,6 +268,29 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        // [FIX] Ensure NetworkManager is ready and persistent
+        if (NetworkManager.Instance == null)
+        {
+             Debug.LogWarning("[GameManager] Warning: NetworkManager not found in Start! Creating fallback...");
+             GameObject net = new GameObject("NetworkManager");
+             net.AddComponent<NetworkManager>();
+        }
+        else
+        {
+             Debug.Log($"[GameManager] NetworkManager Found. LoggedIn: {NetworkManager.Instance.IsLoggedIn}");
+        }
+
+#if UNITY_EDITOR
+        // [DEV] Auto-login for testing in Editor if not logged in
+        // This helps verify Score Submission logic without going through Login Scene every time
+        if (NetworkManager.Instance != null && !NetworkManager.Instance.IsLoggedIn)
+        {
+             Debug.Log("[GameManager] [DEV] Auto-Logging in via TestLogin()...");
+             NetworkManager.Instance.TestLogin();
+             Debug.Log($"[GameManager] Auto-login complete. IsLoggedIn: {NetworkManager.Instance.IsLoggedIn}");
+        }
+#endif
+
         // [FIX] Cleanup Legacy UI (Green Score, etc.) immediately
         CleanupLegacyUI();
 
@@ -512,6 +538,31 @@ public class GameManager : MonoBehaviour
         
         // [FIX] Create Score UI using GameUIBuilder
         Canvas canvas = FindObjectOfType<Canvas>();
+        
+        // [FIX] Auto-create Canvas if missing (Safety for broken scenes)
+        if (canvas == null)
+        {
+            Debug.LogWarning("[GameManager] No Canvas found in StartGame! Creating fallback Canvas...");
+            GameObject cObj = new GameObject("Canvas");
+            canvas = cObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            
+            CanvasScaler scaler = cObj.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+            
+            cObj.AddComponent<GraphicRaycaster>();
+            
+            // Ensure EventSystem
+            if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
+            {
+                var es = new GameObject("EventSystem");
+                es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
+        }
+
         if (canvas != null)
         {
             // [FIX] MonoBehaviour must be added via AddComponent, NOT new()
@@ -520,10 +571,6 @@ public class GameManager : MonoBehaviour
             
             uiBuilder.CreateUI(canvas.transform, this);
             Debug.Log("[GameManager] GameUIBuilder created Score UI");
-        }
-        else
-        {
-            Debug.LogError("[GameManager] No Canvas found for UI creation!");
         }
         
         // Reset State
@@ -753,7 +800,94 @@ public class GameManager : MonoBehaviour
         GameObject rgC = GameObject.Find("RankGaugeContainer"); if(rgC) Destroy(rgC);
         GameObject pmC = GameObject.Find("PauseMenuPanel"); if(pmC) Destroy(pmC); // From GameUIBuilder
 
+        // [NEW] Submit score to ranking
+        SubmitScoreToRanking();
+
         StartCoroutine(ShowResultAnimation(canvas));
+    }
+
+    private void SubmitScoreToRanking()
+    {
+        if (NetworkManager.Instance == null)
+        {
+            Debug.LogWarning("[GameManager] NetworkManager not found. Cannot submit score.");
+            return;
+        }
+
+        if (!NetworkManager.Instance.IsLoggedIn)
+        {
+            Debug.Log("[GameManager] User not logged in. Skipping score submission.");
+            StartCoroutine(WaitAndShowToast("⚠️ 로그인이 필요합니다 (랭킹 미반영)", new Color(1f, 0.6f, 0f)));
+            return;
+        }
+
+        // Determine song name based on scene
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        string songName = sceneName == "Game_second" ? "Sodapop" : "Galaxias";
+
+        Debug.Log($"[GameManager] Submitting score to ranking: {songName}, Score: {score}, Combo: {maxCombo}");
+
+        NetworkManager.Instance.SubmitScore(
+            songName,
+            score,
+            maxCombo,
+            perfectCount,
+            greatCount,
+            badCount,
+            missCount,
+            (success) => {
+                if (success)
+                {
+                    Debug.Log("[GameManager] ✅ Score submitted successfully!");
+                    StartCoroutine(WaitAndShowToast("✅ 랭킹 등록 완료!", Color.green));
+                }
+                else
+                {
+                    Debug.LogWarning("[GameManager] ❌ Failed to submit score.");
+                    StartCoroutine(WaitAndShowToast("❌ 랭킹 등록 실패 (서버 오류)", Color.red));
+                }
+            }
+        );
+    }
+
+    private IEnumerator WaitAndShowToast(string msg, Color col)
+    {
+        yield return new WaitForSeconds(1.5f); // Wait for Result Screen to appear
+        ShowToast(msg, col);
+    }
+
+    private void ShowToast(string message, Color color)
+    {
+        if (gameOverPanel == null) return;
+        
+        GameObject toast = new GameObject("ToastMessage");
+        toast.transform.SetParent(gameOverPanel.transform, false);
+        // Ensure toast is on top
+        toast.transform.SetAsLastSibling();
+        
+        RectTransform rt = toast.AddComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.9f); rt.anchorMax = new Vector2(0.5f, 0.9f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.sizeDelta = new Vector2(600, 60);
+        
+        Image img = toast.AddComponent<Image>();
+        img.color = new Color(0, 0, 0, 0.8f);
+        
+        GameObject tObj = new GameObject("Text");
+        tObj.transform.SetParent(toast.transform, false);
+        RectTransform tr = tObj.AddComponent<RectTransform>();
+        tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
+        tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
+        
+        TextMeshProUGUI tmp = tObj.AddComponent<TextMeshProUGUI>();
+        tmp.text = message;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontSize = 28;
+        tmp.fontStyle = FontStyles.Bold;
+        
+        // Auto destroy
+        Destroy(toast, 4f);
     }
 
     private IEnumerator ShowResultAnimation(Canvas canvas)
@@ -800,11 +934,27 @@ public class GameManager : MonoBehaviour
         // [LOGIC] Try to find album art
         int songIndex = isSecondScene ? 1 : 0;
         Sprite targetSprite = null;
-        if (resultAlbumArt != null && resultAlbumArt.Length > songIndex) targetSprite = resultAlbumArt[songIndex];
+        
+        // 1. Try Array (Inspector Assigned)
+        if (resultAlbumArt != null && resultAlbumArt.Length > songIndex && resultAlbumArt[songIndex] != null) 
+        {
+            targetSprite = resultAlbumArt[songIndex];
+        }
+        
+        // 2. Fallback to Resources (Smart Match)
+        if (targetSprite == null)
+        {
+            string coverName = isSecondScene ? "sodapop_cover" : "galaxias_cover";
+            targetSprite = Resources.Load<Sprite>(coverName);
+            if(targetSprite == null) targetSprite = Resources.Load<Sprite>(coverName + "_thumb"); // Try thumb
+        }
         
         if (targetSprite != null) {
             albumImg.sprite = targetSprite;
             albumImg.color = Color.white;
+        } else {
+             // Gray Placeholder if really nothing found
+             albumImg.color = new Color(0.2f, 0.2f, 0.2f, 1f);
         }
 
         RectTransform albRt = albumObj.GetComponent<RectTransform>();
@@ -984,25 +1134,33 @@ public class GameManager : MonoBehaviour
             btnObj.transform.SetParent(actionPanel.transform, false);
             Image bImg = btnObj.AddComponent<Image>();
             bImg.color = col;
-            bImg.raycastTarget = true; // IMPORTANT
+            bImg.raycastTarget = true;
 
             Button btn = btnObj.AddComponent<Button>();
             btn.onClick.AddListener(action);
+            
+            // [FIX] Ensure NormalColor doesn't override alpha
+            ColorBlock cb = btn.colors;
+            cb.normalColor = Color.white; // Multiplies with Image.color
+            cb.highlightedColor = new Color(1.1f, 1.1f, 1.1f, 1f); // Brighter on hover
+            cb.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+            btn.colors = cb;
             
             // Add Text
             GameObject tObj = new GameObject("Text");
             tObj.transform.SetParent(btnObj.transform, false);
             TextMeshProUGUI t = tObj.AddComponent<TextMeshProUGUI>();
             t.text = label; t.fontSize = 28; t.color = Color.white; t.alignment = TextAlignmentOptions.Center; t.fontStyle = FontStyles.Bold;
-            t.raycastTarget = false; // IMPORTANT: Do not block raycast
+            t.raycastTarget = false; 
             
             RectTransform tr = tObj.GetComponent<RectTransform>();
             tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
             tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
         }
 
-        CreatePopupBtn("RETRY", retryBtnColor, RestartGame);
-        CreatePopupBtn("MAIN MENU", mainBtnColor, ReturnToLobby);
+        CreatePopupBtn("RETRY", new Color( retryBtnColor.r, retryBtnColor.g, retryBtnColor.b, 1.0f), RestartGame);
+        // [User Request] Main Menu button MUCH toggle transparent (0.15)
+        CreatePopupBtn("MAIN MENU", new Color(mainBtnColor.r, mainBtnColor.g, mainBtnColor.b, 0.15f), ReturnToLobby);
         
         // --- ANIMATION ---
         // Score Count

@@ -1,20 +1,37 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 import socket
 import qrcode
 import io
 import sys
 import os
 
-app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Static Folder Path (Absolute)
+base_dir = os.path.abspath(os.path.dirname(__file__))
+static_dir = os.path.join(base_dir, 'Frontend', 'dist')
 
-# Unity UDP 설정
+if not os.path.exists(static_dir):
+    print(f"WARNING: Static folder not found at {static_dir}")
+    print("Did you run 'npm run build' in Frontend?")
+
+app = Flask(__name__, 
+            static_url_path='',
+            static_folder=static_dir,
+            template_folder=static_dir)
+
+# CORS 허용
+CORS(app)
+
+# SocketIO 설정
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# UDP 소켓 설정
 UDP_IP = "127.0.0.1"
-UDP_PORT = 7777
+UDP_PORT = 5005
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def get_all_ips():
@@ -43,8 +60,36 @@ def get_all_ips():
 
 @app.route('/')
 def index():
-    print(f"HTTP Request received from: {request.remote_addr}")
-    return render_template('controller.html')
+    full_path = os.path.join(app.static_folder, 'index.html')
+    print(f"Attempting to serve: {full_path}")
+    
+    if not os.path.exists(full_path):
+        # 404 발생 시 폴더 목록을 보여줘서 디버깅
+        files = os.listdir(app.static_folder) if os.path.exists(app.static_folder) else f"Folder not found: {app.static_folder}"
+        return f"CRITICAL ERROR: File not found at {full_path}. <br> Contents of {app.static_folder}: <br> {files}", 404
+        
+    try:
+        with open(full_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading file: {e}", 500
+
+@app.route('/controller')
+def controller():
+    return index()
+
+# Explicitly serve static assets if default handling fails
+@app.route('/assets/<path:path>')
+def serve_assets(path):
+    return send_from_directory(os.path.join(app.static_folder, 'assets'), path)
+
+# Catch-all for other paths (SPA support)
+@app.route('/<path:path>')
+def catch_all(path):
+    # Check if it's a static file first
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return index()
 
 @socketio.on('connect')
 def test_connect():
@@ -65,7 +110,7 @@ def handle_pose(data):
     pose = data.get('pose')
     print(f"Pose detected: {pose}")
     
-    # 포즈를 레인 인덱스로 매핑
+    # 포즈를 레인 인덱스로 매핑 (Legacy Support)
     lane_map = {
         "O": "0",    # Red
         "X": "1",    # Green
@@ -75,8 +120,6 @@ def handle_pose(data):
     
     if pose in lane_map:
         msg = lane_map[pose]
-    if pose in lane_map:
-        msg = lane_map[pose]
         # UDP 전송 (Unity Editor/PC 버전용)
         try:
             sock.sendto(msg.encode(), (UDP_IP, UDP_PORT))
@@ -84,50 +127,69 @@ def handle_pose(data):
             pass
             
         # Web Socket 전송 (WebGL 버전용)
-        # 모든 클라이언트에게 game_input 이벤트 전송
         socketio.emit('game_input', {'lane': msg})
+
+@socketio.on('mobile_input')
+def handle_mobile_input(data):
+    """
+    Handle generic mobile input (Tap, Tilt, Shake)
+    Payload example: {'type': 'tap', 'lane': 0, 'timestamp': 123456}
+    """
+    import json
+    # print(f"Mobile Input: {data}") # Log reduced for performance
+    
+    try:
+        # Convert to JSON string
+        json_msg = json.dumps(data)
+        
+        # Send to Unity via UDP
+        sock.sendto(json_msg.encode(), (UDP_IP, UDP_PORT))
+        
+        # Broadcast to other web clients (if needed)
+        socketio.emit('mobile_input_broadcast', data)
+    except Exception as e:
+        print(f"Error forwarding mobile input: {e}")
 
 if __name__ == '__main__':
     all_ips = get_all_ips()
     port = int(os.environ.get("PORT", 5000))
     primary_ip = all_ips[0]
-    import time
-    url = f"https://{primary_ip}:{port}?v={int(time.time())}"
     
     print("\n" + "="*50)
-    print(f"Web Controller Server Started!")
-    print(f"Primary Access URL: {url}")
-    print(f"Other detected IPs: {all_ips[1:]}")
-    print("If the QR code doesn't work, try these IPs manually.")
-    print("Scan the QR Code below with your phone:")
-    print("="*50 + "\n")
+    print(f"Web Controller Server Starting")
+    print(f"Local URL: http://{primary_ip}:{port}/controller")
     
-    # QR 코드 생성 및 출력
-    qr = qrcode.QRCode()
-    qr.add_data(url)
-    qr.make(fit=True)
-    qr.print_ascii(invert=True)
+    # Ask for Tunnel URL to generate correct QR Code
+    print("\n[OPTIONAL] Enter public Tunnel URL (e.g. https://xxxx.loca.lt) to update QR Code.")
+    print("Press ENTER to skip and use Local URL.")
+    tunnel_url = input("Tunnel URL > ").strip()
+    
+    final_url = f"{tunnel_url}/controller" if tunnel_url else f"http://{primary_ip}:{port}/controller"
+    
+    print(f"\nFinal Controller URL: {final_url}")
+    print("="*50 + "\n")
 
-    # QR 코드 이미지 저장 (Unity용)
+    # Generate QR Code
+    qr = qrcode.QRCode()
+    qr.add_data(final_url)
+    qr.make(fit=True)
+    
     try:
         img = qr.make_image(fill_color="black", back_color="white")
-        # 절대 경로로 저장 (사용자 환경에 맞게 수정 필요할 수 있음)
-        save_path = r"c:\Users\user\Downloads\Rhythm_game (2)\Assets\Resources\qrcode.png"
+        save_path = os.path.join(base_dir, 'Assets', 'Resources', 'qrcode.png')
+        
+        # Resources 폴더가 없으면 생성 시도
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
         img.save(save_path)
         print(f"QR Code saved to: {save_path}")
+    except Exception as e: 
+        print(f"Failed to save QR Code: {e}")
+
+    # 3. 서버 실행 (HTTP)
+    print(f"Listening on 0.0.0.0:{port} (HTTP)...")
+    try:
+        socketio.run(app, host='0.0.0.0', port=port, debug=True, use_reloader=False) 
     except Exception as e:
-        print(f"Failed to save QR code image: {e}")
-
-    # HTTPS 설정을 위한 인증서 생성 (Werkzeug 사용)
-    from werkzeug.serving import make_ssl_devcert
-    import os
-    
-    if not os.path.exists('cert.pem') or not os.path.exists('key.pem'):
-        print("Generating self-signed SSL certificate...")
-        make_ssl_devcert('./ssl', host='0.0.0.0')
-        # make_ssl_devcert creates ssl.crt and ssl.key
-        os.rename('ssl.crt', 'cert.pem')
-        os.rename('ssl.key', 'key.pem')
-
-    print("Starting server with HTTP (No SSL)...")
-    socketio.run(app, host='0.0.0.0', port=port)
+        print(f"CRITICAL ERROR: {e}")
+        input("Press Enter to exit...")

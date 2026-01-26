@@ -79,7 +79,7 @@ public class NoteSpawner : MonoBehaviour
         while (currentNoteIndex < beatmap.notes.Count)
         {
             NoteData noteData = beatmap.notes[currentNoteIndex];
-            float spawnTime = noteData.time - 2f; // 노트가 판정선에 도달하기 2초 전에 생성
+            float spawnTime = noteData.time - 1.5f; // [조정] 더 빠른 노트 도착 (2초 → 1.5초)
 
             if (GameManager.Instance.songPosition >= spawnTime)
             {
@@ -119,14 +119,8 @@ public class NoteSpawner : MonoBehaviour
         BubbleNote bubble = noteObj.GetComponent<BubbleNote>();
         if (bubble != null)
         {
-            bubble.Initialize(2.0f); // Just init visuals
-
-            // Assign Random Material from Manager (NoteSpawner)
-            if (noteMaterials != null && noteMaterials.Length > 0)
-            {
-                Material randomMat = noteMaterials[Random.Range(0, noteMaterials.Length)];
-                bubble.SetMaterial(randomMat);
-            }
+            bubble.Initialize(1.5f); // [조정] 더 빠른 수축 (2.0 → 1.5)
+            // Note: New BubbleNote manages its own colors internally
         }
     }
 
