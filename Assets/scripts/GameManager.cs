@@ -498,7 +498,16 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("[GameManager] ✗ Sodapop music not found! Assign in Inspector or add to Resources folder.");
+                    Debug.LogError("[GameManager] ✗ Sodapop music not found! Attempting fallback to Galaxias...");
+                    gameMusic = galaxiasMusic; // Fallback
+                    if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Galaxias");
+                    
+                    // Final Fail-safe: Create dummy clip
+                    if (gameMusic == null)
+                    {
+                        Debug.LogError("[GameManager] All music failed. Creating dummy clip to start game.");
+                        gameMusic = AudioClip.Create("Dummy", 44100, 1, 44100, false);
+                    }
                 }
             }
         }
@@ -1249,8 +1258,8 @@ public class GameManager : MonoBehaviour
         
         ParticleSystem ps = pObj.AddComponent<ParticleSystem>();
         var renderer = pObj.GetComponent<ParticleSystemRenderer>();
-        // [FIX] Force "Default-Particle" for Soft Glow texture
-        renderer.material = new Material(Shader.Find("Particles/Standard Unlit")); 
+        // [FIX] Force "Sprites/Default" which is reliable for WebGL
+        renderer.material = new Material(Shader.Find("Sprites/Default")); 
         renderer.material.SetFloat("_Mode", 2); // Fade
         
         // Try to load a known circle texture or just use soft particle default

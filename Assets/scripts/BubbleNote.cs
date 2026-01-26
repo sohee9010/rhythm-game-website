@@ -133,9 +133,13 @@ public class BubbleNote : MonoBehaviour
         shape.radius = targetRadius;
 
         var renderer = glowParticles.GetComponent<ParticleSystemRenderer>();
-        Shader shader = Shader.Find("Particles/Additive");
-        if (shader == null) shader = Shader.Find("Mobile/Particles/Additive");
-        renderer.material = new Material(shader);
+        // [FIX] Use Sprites/Default which is ALWAYS included in WebGL builds
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null) shader = Shader.Find("Mobile/Particles/Alpha Blended"); // Fallback
+        
+        Material mat = new Material(shader);
+        mat.name = "GlowMat";
+        renderer.material = mat;
     }
 
     private void Update()
