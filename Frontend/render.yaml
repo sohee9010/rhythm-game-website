@@ -2,7 +2,7 @@ services:
   - type: web
     name: rhythm-game-website
     env: static
-    buildCommand: curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && git lfs pull && npm install && npm run build
+    buildCommand: git lfs install && git lfs pull && npm install && npm run build
     staticPublishPath: ./dist
     headers:
       - path: /*
