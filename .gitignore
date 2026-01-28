@@ -85,3 +85,10 @@ Frontend/.vite/
 !Frontend/public/game/Build/
 /Frontend/public/game/Build/game.data
 !Frontend/public/game/Build/game.data.part*
+
+# Unity WebGL 빌드 - 큰 파일 제외 (GitHub 100MB 제한)
+# MMD4Mecanim_Data 폴더 전체 제외 (Git LFS로 관리)
+Frontend/public/game/MMD4Mecanim_Data/
+Frontend/public/game/*.exe
+Frontend/public/game/*.dll
+Frontend/public/game/MonoBleedingEdge/
