@@ -19,5 +19,8 @@ services:
         value: require-corp
     routes:
       - type: rewrite
+        source: /controller
+        destination: /index.html
+      - type: rewrite
         source: /*
         destination: /index.html
