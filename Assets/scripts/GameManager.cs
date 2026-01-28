@@ -227,15 +227,26 @@ public class GameManager : MonoBehaviour
         // 3. Game Scene Logic (Only if NOT Lobby)
         Debug.Log("[GameManager] Game Scene loaded. Initializing Game.");
         
-        // [FIX] Clear previous audio clip AND reset volume to prevent mixing and loud audio
+        // [CRITICAL FIX] Stop AND Clear completely to prevent song overlap
         if (mainMusicSource != null)
         {
             mainMusicSource.Stop();
-            mainMusicSource.clip = null;
-            mainMusicSource.volume = baseVolume; // Reset to base volume
-            Debug.Log($"[GameManager] Cleared previous audio clip and reset volume to {baseVolume}");
+            mainMusicSource.clip = null; // Important!
+            mainMusicSource.time = 0f;
+            Debug.Log("[GameManager] Completely STOPPED & CLEARED previous music.");
         }
         
+        // [FIX] Destroy duplicate GameManagers if any exist (Safety)
+        GameManager[] managers = FindObjectsOfType<GameManager>();
+        if (managers.Length > 1)
+        {
+            Debug.LogWarning($"[GameManager] Found {managers.Length} GameManagers! Destroying others...");
+            foreach (var mgr in managers)
+            {
+                if (mgr != this) Destroy(mgr.gameObject);
+            }
+        }
+
         // [FIX] Select music based on scene name BEFORE starting game
         SelectMusicForScene();
         
@@ -408,9 +419,20 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (isPlaying && mainMusicSource != null && mainMusicSource.isPlaying)
+        if (isPlaying)
         {
-            songPosition += Time.deltaTime;
+            if (mainMusicSource != null && mainMusicSource.clip != null)
+            {
+               // Update position
+               songPosition = mainMusicSource.time;
+
+               // [FIX] Detect End of Song
+               if (!mainMusicSource.isPlaying && songPosition >= mainMusicSource.clip.length - 0.1f)
+               {
+                   Debug.Log("[GameManager] Song Finished! Ending Game...");
+                   EndGame();
+               }
+            }
         }
         
         // [FIX] Check HP every frame to ensure EndGame is called (but only once!)
@@ -427,49 +449,13 @@ public class GameManager : MonoBehaviour
         {
              float remainingTime = mainMusicSource.clip.length - mainMusicSource.time;
              if (remainingTime < 0) remainingTime = 0;
+             // If song ended but isPlaying is true, set to 00:00
+             if (!mainMusicSource.isPlaying && isPlaying) remainingTime = 0;
              
              int minutes = Mathf.FloorToInt(remainingTime / 60F);
              int seconds = Mathf.FloorToInt(remainingTime - minutes * 60);
              // Always show 2 digits
              timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-        }
-        
-        // [DEBUG] Detect clicks on result screen
-        if (!isPlaying && Input.GetMouseButtonDown(0))
-        {
-            var eventSystem = UnityEngine.EventSystems.EventSystem.current;
-            if (eventSystem != null)
-            {
-                var pointerData = new UnityEngine.EventSystems.PointerEventData(eventSystem);
-                pointerData.position = Input.mousePosition;
-                
-                var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
-                eventSystem.RaycastAll(pointerData, results);
-                
-                if (results.Count > 0)
-                {
-                    string clickedName = results[0].gameObject.name;
-                    GameObject clickedObj = results[0].gameObject;
-                    
-                    Debug.Log($"[GameManager DEBUG] Clicked: {clickedName} | Parent: {clickedObj.transform.parent?.name} | Layer: {LayerMask.LayerToName(clickedObj.layer)}");
-                    
-                    // [FIX] Manually trigger button actions since onClick doesn't work
-                    if (clickedName == "Btn_RETRY" || (clickedObj.transform.parent != null && clickedObj.transform.parent.name == "Btn_RETRY"))
-                    {
-                        Debug.Log("[GameManager] ===== MANUAL RETRY CLICKED =====");
-                        RestartGame();
-                    }
-                    else if (clickedName == "Btn_MAINMENU" || (clickedObj.transform.parent != null && clickedObj.transform.parent.name == "Btn_MAINMENU"))
-                    {
-                        Debug.Log("[GameManager] ===== MANUAL MAIN CLICKED =====");
-                        ReturnToLobby();
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning("[GameManager UI DEBUG] Click detected but NO UI hit! (Raycast returned 0 results)");
-                }
-            }
         }
     }
 
@@ -477,51 +463,62 @@ public class GameManager : MonoBehaviour
     {
         // [FIX] Use scene name directly instead of isSecondScene flag to prevent confusion
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        
-        // [FIX] Clear previous music assignment
+
+        // [CRITICAL FIX] Update isSecondScene flag based on current scene
+        isSecondScene = (sceneName == "Game_second");
+        Debug.Log($"[GameManager] Scene: {sceneName}, isSecondScene: {isSecondScene}");
+
+        // [FIX] Clear previous music assignment completely
         gameMusic = null;
-        
+
+        // [CRITICAL FIX] ALWAYS load from Resources first to ensure correct audio
+        // Inspector references don't persist across scenes with DontDestroyOnLoad singleton
         if (sceneName == "Game_second")
         {
-            // Game_second 씬: Sodapop 사용
-            if (sodapopMusic != null)
+            // Game_second 씬: Sodapop 사용 - ALWAYS try Resources first
+            gameMusic = Resources.Load<AudioClip>("Sodapop");
+            if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Music/Sodapop");
+            if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Audio/Sodapop");
+
+            // Only use Inspector reference as last resort
+            if (gameMusic == null && sodapopMusic != null)
             {
                 gameMusic = sodapopMusic;
-                Debug.Log("[GameManager] ✓ Selected Sodapop music for Game_second scene");
+                Debug.Log("[GameManager] ✓ Using Inspector-assigned Sodapop");
+            }
+
+            if (gameMusic != null)
+            {
+                Debug.Log($"[GameManager] ✓ Selected Sodapop music for Game_second scene: {gameMusic.name}");
             }
             else
             {
-                gameMusic = Resources.Load<AudioClip>("Sodapop");
-                if (gameMusic != null)
-                {
-                    Debug.Log("[GameManager] ✓ Loaded Sodapop from Resources");
-                }
-                else
-                {
-                    Debug.LogError("[GameManager] ✗ Sodapop music not found! Attempting fallback to Galaxias...");
-                    gameMusic = galaxiasMusic; // Fallback
-                    if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Galaxias");
-                    
-                    // Final Fail-safe: Create dummy clip
-                    if (gameMusic == null)
-                    {
-                        Debug.LogError("[GameManager] All music failed. Creating dummy clip to start game.");
-                        gameMusic = AudioClip.Create("Dummy", 44100, 1, 44100, false);
-                    }
-                }
+                Debug.LogError("[GameManager] ✗ Sodapop music not found anywhere!");
             }
         }
         else if (sceneName == "Game_first")
         {
-            // Game_first 씬: Galaxias 사용
-            if (galaxiasMusic != null)
+            // Game_first 씬: Galaxias 사용 - ALWAYS try Resources first
+            // Note: Actual filename is "Galaxias_ Shor ver." (with space and extra characters)
+            gameMusic = Resources.Load<AudioClip>("Galaxias_ Shor ver.");
+            if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Galaxias");
+            if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Music/Galaxias");
+            if (gameMusic == null) gameMusic = Resources.Load<AudioClip>("Audio/Galaxias");
+
+            // Only use Inspector reference as last resort
+            if (gameMusic == null && galaxiasMusic != null)
             {
                 gameMusic = galaxiasMusic;
-                Debug.Log("[GameManager] ✓ Selected Galaxias music for Game_first scene");
+                Debug.Log("[GameManager] ✓ Using Inspector-assigned Galaxias");
+            }
+
+            if (gameMusic != null)
+            {
+                Debug.Log($"[GameManager] ✓ Selected Galaxias music for Game_first scene: {gameMusic.name}");
             }
             else
             {
-                Debug.LogError("[GameManager] ✗ Galaxias music not assigned! Assign in Inspector.");
+                Debug.LogError("[GameManager] ✗ Galaxias music not found anywhere!");
             }
         }
         else
@@ -541,9 +538,23 @@ public class GameManager : MonoBehaviour
             Debug.LogError("[GameManager] ✗ gameMusic is NULL! Cannot start game without music.");
             return;
         }
+
+        // [DOUBLE CHECK] If mainMusicSource is playing something else, KILL IT.
+        if (mainMusicSource != null && mainMusicSource.isPlaying)
+        {
+            if (mainMusicSource.clip != null && mainMusicSource.clip.name != gameMusic.name)
+            {
+                Debug.LogWarning($"[GameManager] Wrong music playing ({mainMusicSource.clip.name}) in {gameMusic.name} scene! STOPPING.");
+                mainMusicSource.Stop();
+                mainMusicSource.clip = null;
+            }
+        }
         
         // Create HP Bar ONLY when game starts
         CreateHPBar();
+        
+        // [NEW] Show Song Title
+        CreateSongTitleDisplay();
         
         // [FIX] Create Score UI using GameUIBuilder
         Canvas canvas = FindObjectOfType<Canvas>();
@@ -620,6 +631,9 @@ public class GameManager : MonoBehaviour
             
             Debug.Log($"[GameManager] AudioSource 설정: Volume={mainMusicSource.volume}, Clip={gameMusic.name}");
             Debug.Log($"[GameManager] AudioSource 상태: enabled={mainMusicSource.enabled}, mute={mainMusicSource.mute}");
+            
+            // [CRITICAL FIX] Disable loop so game ends naturally
+            mainMusicSource.loop = false;
             
             mainMusicSource.Play();
             
@@ -750,6 +764,9 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        // [CRITICAL FIX] Ensure Time is running for button clicks
+        Time.timeScale = 1f;
+
         // Hide miscellaneous texts
         TextMeshProUGUI[] allTexts = Object.FindObjectsOfType<TextMeshProUGUI>();
         foreach (var txt in allTexts)
@@ -802,6 +819,17 @@ public class GameManager : MonoBehaviour
              GameObject eventSystem = new GameObject("EventSystem");
              eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
              eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+             Debug.Log("[GameManager] Created new EventSystem");
+        }
+        else
+        {
+             // [FIX] Ensure StandaloneInputModule exists on current EventSystem
+             var currentES = UnityEngine.EventSystems.EventSystem.current;
+             if (currentES.GetComponent<UnityEngine.EventSystems.StandaloneInputModule>() == null)
+             {
+                  currentES.gameObject.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+                  Debug.Log("[GameManager] Added StandaloneInputModule to existing EventSystem");
+             }
         }
 
         // [FIX] Destroy known overlapping containers to prevent raycast blocking
@@ -881,6 +909,7 @@ public class GameManager : MonoBehaviour
         
         Image img = toast.AddComponent<Image>();
         img.color = new Color(0, 0, 0, 0.8f);
+        img.raycastTarget = false; // [FIX] Allow clicks to pass through!
         
         GameObject tObj = new GameObject("Text");
         tObj.transform.SetParent(toast.transform, false);
@@ -894,6 +923,7 @@ public class GameManager : MonoBehaviour
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontSize = 28;
         tmp.fontStyle = FontStyles.Bold;
+        tmp.raycastTarget = false; // [FIX] Text shouldn't block clicks either
         
         // Auto destroy
         Destroy(toast, 4f);
@@ -901,6 +931,21 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ShowResultAnimation(Canvas canvas)
     {
+        // [FIX] Submit Score Locally (since RankingManager is missing)
+        string songName = isSecondScene ? "Sodapop" : "Galaxias";
+        int bestScore = PlayerPrefs.GetInt($"BestScore_{songName}", 0);
+        
+        if (score > bestScore)
+        {
+            PlayerPrefs.SetInt($"BestScore_{songName}", score);
+            PlayerPrefs.Save();
+            Debug.Log($"[GameManager] New Best Score Saved: {score} for {songName}");
+        }
+        else
+        {
+            Debug.Log($"[GameManager] Score: {score} (Best: {bestScore})");
+        }
+
         // [FIX] 0. Cleanup Old Particles
         CleanUpParticles();
 
@@ -939,64 +984,58 @@ public class GameManager : MonoBehaviour
         albumObj.transform.SetParent(popupObj.transform, false);
         Image albumImg = albumObj.AddComponent<Image>();
         albumImg.color = Color.gray; 
-
+        
         // [LOGIC] Try to find album art
         int songIndex = isSecondScene ? 1 : 0;
         Sprite targetSprite = null;
         
-        // 1. Try Array (Inspector Assigned)
         if (resultAlbumArt != null && resultAlbumArt.Length > songIndex && resultAlbumArt[songIndex] != null) 
         {
             targetSprite = resultAlbumArt[songIndex];
         }
         
-        // 2. Fallback to Resources (Smart Match)
         if (targetSprite == null)
         {
             string coverName = isSecondScene ? "sodapop_cover" : "galaxias_cover";
             targetSprite = Resources.Load<Sprite>(coverName);
-            if(targetSprite == null) targetSprite = Resources.Load<Sprite>(coverName + "_thumb"); // Try thumb
+            if(targetSprite == null) targetSprite = Resources.Load<Sprite>(coverName + "_thumb"); 
         }
         
         if (targetSprite != null) {
             albumImg.sprite = targetSprite;
             albumImg.color = Color.white;
         } else {
-             // Gray Placeholder if really nothing found
              albumImg.color = new Color(0.2f, 0.2f, 0.2f, 1f);
         }
 
         RectTransform albRt = albumObj.GetComponent<RectTransform>();
-        // [FIX] Spacing Adjustment: Moved Album UP slightly
-        albRt.anchorMin = new Vector2(0.05f, 0.50f); // Was 0.45
-        albRt.anchorMax = new Vector2(0.35f, 0.90f); // 
+        albRt.anchorMin = new Vector2(0.05f, 0.50f); 
+        albRt.anchorMax = new Vector2(0.35f, 0.90f); 
         albRt.offsetMin = Vector2.zero; albRt.offsetMax = Vector2.zero;
         albumImg.preserveAspect = true;
 
-        // Song Title (Next to Album, Top)
-        GameObject titleObj = new GameObject("SongTitle");
-        titleObj.transform.SetParent(popupObj.transform, false);
-        TextMeshProUGUI tTxt = titleObj.AddComponent<TextMeshProUGUI>();
-        string sTitle = (songTitles != null && songTitles.Length > songIndex) ? songTitles[songIndex] : "Song Name";
-        tTxt.text = sTitle;
-        tTxt.fontSize = 40; 
-        tTxt.fontStyle = FontStyles.Bold;
-        tTxt.color = Color.white;
-        tTxt.alignment = TextAlignmentOptions.Left;
+        // Title & Difficulty Badge
+        GameObject titleInfoObj = new GameObject("TitleInfo");
+        titleInfoObj.transform.SetParent(popupObj.transform, false);
+        RectTransform tiRt = titleInfoObj.AddComponent<RectTransform>();
+        tiRt.anchorMin = new Vector2(0.38f, 0.80f); tiRt.anchorMax = new Vector2(0.95f, 0.90f);
+        tiRt.offsetMin = Vector2.zero; tiRt.offsetMax = Vector2.zero;
         
-        RectTransform tRt = titleObj.GetComponent<RectTransform>();
-        tRt.anchorMin = new Vector2(0.38f, 0.80f); tRt.anchorMax = new Vector2(0.8f, 0.90f);
-        tRt.offsetMin = Vector2.zero; tRt.offsetMax = Vector2.zero;
+        TextMeshProUGUI titleTxt = titleInfoObj.AddComponent<TextMeshProUGUI>();
+        titleTxt.text = songName.ToUpper() + "!";
+        titleTxt.fontSize = 45; titleTxt.fontStyle = FontStyles.Bold;
+        titleTxt.alignment = TextAlignmentOptions.MidlineLeft;
+        titleTxt.color = Color.white;
 
-        // Difficulty Badge (Below Title)
+        // Difficulty Badge
         GameObject diffBadge = new GameObject("DiffBadge");
         diffBadge.transform.SetParent(popupObj.transform, false);
-        Image dImg = diffBadge.AddComponent<Image>();
-        dImg.color = new Color(0, 0.5f, 1f); // Blue
-        RectTransform dbRt = diffBadge.GetComponent<RectTransform>();
+        Image dbImg = diffBadge.AddComponent<Image>();
+        dbImg.color = new Color(0, 0.6f, 1f); // Blue for Hard
+        RectTransform dbRt = diffBadge.GetComponent<RectTransform>(); // [FIX] Use GetComponent, not AddComponent
         dbRt.anchorMin = new Vector2(0.38f, 0.72f); dbRt.anchorMax = new Vector2(0.50f, 0.78f);
         dbRt.offsetMin = Vector2.zero; dbRt.offsetMax = Vector2.zero;
-        
+
         GameObject dbTxtObj = new GameObject("Txt");
         dbTxtObj.transform.SetParent(diffBadge.transform, false);
         TextMeshProUGUI dbTxt = dbTxtObj.AddComponent<TextMeshProUGUI>();
@@ -1004,7 +1043,7 @@ public class GameManager : MonoBehaviour
         RectTransform dbtRt = dbTxtObj.GetComponent<RectTransform>();
         dbtRt.anchorMin = Vector2.zero; dbtRt.anchorMax = Vector2.one; dbtRt.offsetMin = Vector2.zero; dbtRt.offsetMax = Vector2.zero;
 
-        // [FIX] Calc Stats First (Moved Up to ensure variables exist)
+        // Calc Stats
         float acc = 1.0f;
         int total = perfectCount + greatCount + badCount + missCount;
         if (total > 0) acc = (perfectCount * 1.0f + greatCount * 0.8f + badCount * 0.5f) / total;
@@ -1012,8 +1051,7 @@ public class GameManager : MonoBehaviour
         string rChar = "F"; 
         Color rankColor = Color.gray; 
         Color pColor1 = Color.gray; 
-
-        Color pColor2 = Color.white; // [FIX] Re-added pColor2
+        Color pColor2 = Color.white;
 
         if (acc >= 0.95f) { rChar = "S"; rankColor = new Color(1, 0.85f, 0.1f); pColor1 = new Color(1, 0.9f, 0.2f); }
         else if (acc >= 0.85f) { rChar = "A"; rankColor = new Color(1, 0.4f, 0.8f); pColor1 = new Color(1, 0.5f, 0.9f); }
@@ -1021,15 +1059,12 @@ public class GameManager : MonoBehaviour
         else if (acc >= 0.50f) { rChar = "C"; rankColor = Color.green; pColor1 = Color.green; }
         else { rChar = "F"; rankColor = new Color(0.8f, 0.1f, 0.1f); pColor1 = Color.red; pColor2 = Color.black; }
 
-        // B. RANK & SCORE (Right Side Emphasis)
-        // Rank (Huge, Right area - Moved UP)
+        // Rank Display
         GameObject rankObj = new GameObject("RankBig");
         rankObj.transform.SetParent(popupObj.transform, false);
         RectTransform rRt = rankObj.AddComponent<RectTransform>();
-        
-        // Position Rank Higher
-        rRt.anchorMin = new Vector2(0.65f, 0.55f); // Was 0.45
-        rRt.anchorMax = new Vector2(0.95f, 0.90f); // Was 0.85
+        rRt.anchorMin = new Vector2(0.65f, 0.55f); 
+        rRt.anchorMax = new Vector2(0.95f, 0.90f); 
         rRt.offsetMin = Vector2.zero; rRt.offsetMax = Vector2.zero;
         
         TextMeshProUGUI rTxt = rankObj.AddComponent<TextMeshProUGUI>();
@@ -1037,75 +1072,38 @@ public class GameManager : MonoBehaviour
         rTxt.fontSize = 220; 
         rTxt.fontStyle = FontStyles.Bold | FontStyles.Italic;
         rTxt.alignment = TextAlignmentOptions.Center;
-        
-        // [FIX] Metallic Gradient for Rank
-        rTxt.enableVertexGradient = true;
-        VertexGradient rankGrad = new VertexGradient(
-            new Color(1f, 1f, 1f), // TL White
-            new Color(1f, 1f, 1f), // TR White
-            rankColor, // BL Main Color
-            rankColor  // BR Main Color
-        );
-        // Specialized Gradients
-        if (rChar == "S") rankGrad = new VertexGradient(new Color(1f, 1f, 0.8f), new Color(1f, 1f, 0.8f), new Color(1f, 0.6f, 0f), new Color(1f, 0.5f, 0f)); // Gold
-        else if (rChar == "A") rankGrad = new VertexGradient(Color.white, Color.white, new Color(0.7f, 0.7f, 0.8f), new Color(0.5f, 0.5f, 0.6f)); // Silver/Steel
-        else if (rChar == "B") rankGrad = new VertexGradient(new Color(1f, 0.8f, 0.6f), new Color(1f, 0.8f, 0.6f), new Color(0.6f, 0.4f, 0.2f), new Color(0.5f, 0.3f, 0.1f)); // Bronze
-        
-        rTxt.colorGradient = rankGrad;
-        rTxt.color = Color.white; // Base color white to let gradient show
-        rTxt.alpha = 0; // Start Invisible
+        rTxt.color = rankColor; 
 
-        // Outline for Rank
-        var rOl = rankObj.AddComponent<UnityEngine.UI.Outline>();
-        rOl.effectColor = new Color(0,0,0,0.8f);
-        rOl.effectDistance = new Vector2(5, -5);
-
-        // SCORE (Moved Left, Below Difficulty)
+        // Score Display
         GameObject scoreObj = new GameObject("ScoreDisplay");
         scoreObj.transform.SetParent(popupObj.transform, false);
         RectTransform scRt = scoreObj.AddComponent<RectTransform>();
-        // Position below "HARD" badge
         scRt.anchorMin = new Vector2(0.38f, 0.58f); 
         scRt.anchorMax = new Vector2(0.90f, 0.68f);
         scRt.offsetMin = Vector2.zero; scRt.offsetMax = Vector2.zero;
         
         TextMeshProUGUI scoreTxt = scoreObj.AddComponent<TextMeshProUGUI>();
         scoreTxt.text = "SCORE  000000"; 
-        scoreTxt.alignment = TextAlignmentOptions.Left; // Align Left with Title/Badge
+        scoreTxt.alignment = TextAlignmentOptions.Left; 
         scoreTxt.fontSize = 55;
         scoreTxt.fontStyle = FontStyles.Bold | FontStyles.Italic;
-        // Silver Metallic Gradient for Score
-        scoreTxt.enableVertexGradient = true;
-        scoreTxt.colorGradient = new VertexGradient(
-            new Color(0.9f, 0.9f, 0.9f), 
-            new Color(0.9f, 0.9f, 0.9f), 
-            new Color(0.4f, 0.4f, 0.5f), 
-            new Color(0.3f, 0.3f, 0.4f)
-        );
         scoreTxt.color = Color.white;
-        
-        // Add specific Outline to Score
-        var sOl = scoreObj.AddComponent<UnityEngine.UI.Outline>();
-        sOl.effectColor = Color.black; 
-        sOl.effectDistance = new Vector2(2, -2);
 
-        // C. Stats (Middle Strip)
+        // Stats Row
         GameObject statsObj = new GameObject("StatsRow");
         statsObj.transform.SetParent(popupObj.transform, false);
         RectTransform stRt = statsObj.AddComponent<RectTransform>();
-        // [FIX] Spacing Adjustment: Moved Stats DOWN to create gap with Album
-        stRt.anchorMin = new Vector2(0.05f, 0.20f);  // Was 0.25
-        stRt.anchorMax = new Vector2(0.70f, 0.40f);  // Was 0.45
+        stRt.anchorMin = new Vector2(0.05f, 0.20f); 
+        stRt.anchorMax = new Vector2(0.70f, 0.40f); 
         stRt.offsetMin = Vector2.zero; stRt.offsetMax = Vector2.zero;
         
-        // Background for Stats
         Image stBg = statsObj.AddComponent<Image>();
         stBg.color = new Color(0,0,0,0.3f); 
         
         HorizontalLayoutGroup hlg = statsObj.AddComponent<HorizontalLayoutGroup>();
         hlg.childAlignment = TextAnchor.MiddleCenter; hlg.spacing = 30;
         
-         void CreateStat(string l, int v) {
+        void CreateStat(string l, int v) {
             GameObject g = new GameObject(l);
             g.transform.SetParent(statsObj.transform, false);
             VerticalLayoutGroup vl = g.AddComponent<VerticalLayoutGroup>();
@@ -1125,54 +1123,74 @@ public class GameManager : MonoBehaviour
         CreateStat("MISS", missCount);
         CreateStat("COMBO", maxCombo);
 
-        // D. Buttons (Bottom)
-        // Ensure they are Raycast Targets!
-        GameObject actionPanel = new GameObject("ActionButtons");
-        actionPanel.transform.SetParent(popupObj.transform, false);
-        RectTransform actRt = actionPanel.AddComponent<RectTransform>();
-        actRt.anchorMin = new Vector2(0.2f, 0.05f); actRt.anchorMax = new Vector2(0.8f, 0.18f); // Bottom area
-        actRt.offsetMin = Vector2.zero; actRt.offsetMax = Vector2.zero;
-        
-        HorizontalLayoutGroup actLayout = actionPanel.AddComponent<HorizontalLayoutGroup>();
-        actLayout.childAlignment = TextAnchor.MiddleCenter;
-        actLayout.spacing = 50;
-        actLayout.childControlHeight = true; actLayout.childControlWidth = true;
+        // D. Buttons - [REWRITE] Manual positioning for reliable button clicks
+        // RETRY Button
+        GameObject retryBtn = new GameObject("Btn_RETRY");
+        retryBtn.transform.SetParent(popupObj.transform, false);
+        RectTransform retryRt = retryBtn.AddComponent<RectTransform>();
+        retryRt.anchorMin = new Vector2(0.15f, 0.03f);
+        retryRt.anchorMax = new Vector2(0.45f, 0.15f);
+        retryRt.offsetMin = Vector2.zero;
+        retryRt.offsetMax = Vector2.zero;
 
-        void CreatePopupBtn(string label, Color col, UnityEngine.Events.UnityAction action) {
-            GameObject btnObj = new GameObject("Btn_" + label.Replace(" ", ""));
-            btnObj.transform.SetParent(actionPanel.transform, false);
-            Image bImg = btnObj.AddComponent<Image>();
-            bImg.color = col;
-            bImg.raycastTarget = true;
+        Image retryImg = retryBtn.AddComponent<Image>();
+        retryImg.color = new Color(retryBtnColor.r, retryBtnColor.g, retryBtnColor.b, 1.0f);
+        retryImg.raycastTarget = true;
 
-            Button btn = btnObj.AddComponent<Button>();
-            btn.onClick.AddListener(action);
-            
-            // [FIX] Ensure NormalColor doesn't override alpha
-            ColorBlock cb = btn.colors;
-            cb.normalColor = Color.white; // Multiplies with Image.color
-            cb.highlightedColor = new Color(1.1f, 1.1f, 1.1f, 1f); // Brighter on hover
-            cb.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
-            btn.colors = cb;
-            
-            // Add Text
-            GameObject tObj = new GameObject("Text");
-            tObj.transform.SetParent(btnObj.transform, false);
-            TextMeshProUGUI t = tObj.AddComponent<TextMeshProUGUI>();
-            t.text = label; t.fontSize = 28; t.color = Color.white; t.alignment = TextAlignmentOptions.Center; t.fontStyle = FontStyles.Bold;
-            t.raycastTarget = false; 
-            
-            RectTransform tr = tObj.GetComponent<RectTransform>();
-            tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
-            tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
-        }
+        Button retryBtnComp = retryBtn.AddComponent<Button>();
+        retryBtnComp.targetGraphic = retryImg;
+        retryBtnComp.onClick.AddListener(RestartGame);
 
-        CreatePopupBtn("RETRY", new Color( retryBtnColor.r, retryBtnColor.g, retryBtnColor.b, 1.0f), RestartGame);
-        // [User Request] Main Menu button MUCH toggle transparent (0.15)
-        CreatePopupBtn("MAIN MENU", new Color(mainBtnColor.r, mainBtnColor.g, mainBtnColor.b, 0.15f), ReturnToLobby);
+        GameObject retryTxtObj = new GameObject("Text");
+        retryTxtObj.transform.SetParent(retryBtn.transform, false);
+        TextMeshProUGUI retryTxt = retryTxtObj.AddComponent<TextMeshProUGUI>();
+        retryTxt.text = "RETRY";
+        retryTxt.fontSize = 32;
+        retryTxt.fontStyle = FontStyles.Bold;
+        retryTxt.alignment = TextAlignmentOptions.Center;
+        retryTxt.color = Color.white;
+        retryTxt.raycastTarget = false;
+        RectTransform retryTxtRt = retryTxtObj.GetComponent<RectTransform>();
+        retryTxtRt.anchorMin = Vector2.zero; retryTxtRt.anchorMax = Vector2.one;
+        retryTxtRt.offsetMin = Vector2.zero; retryTxtRt.offsetMax = Vector2.zero;
+
+        // MAIN MENU Button
+        GameObject menuBtn = new GameObject("Btn_MAINMENU");
+        menuBtn.transform.SetParent(popupObj.transform, false);
+        RectTransform menuRt = menuBtn.AddComponent<RectTransform>();
+        menuRt.anchorMin = new Vector2(0.55f, 0.03f);
+        menuRt.anchorMax = new Vector2(0.85f, 0.15f);
+        menuRt.offsetMin = Vector2.zero;
+        menuRt.offsetMax = Vector2.zero;
+
+        Image menuImg = menuBtn.AddComponent<Image>();
+        menuImg.color = new Color(mainBtnColor.r, mainBtnColor.g, mainBtnColor.b, 0.9f);
+        menuImg.raycastTarget = true;
+
+        Button menuBtnComp = menuBtn.AddComponent<Button>();
+        menuBtnComp.targetGraphic = menuImg;
+        menuBtnComp.onClick.AddListener(ReturnToLobby);
+
+        GameObject menuTxtObj = new GameObject("Text");
+        menuTxtObj.transform.SetParent(menuBtn.transform, false);
+        TextMeshProUGUI menuTxt = menuTxtObj.AddComponent<TextMeshProUGUI>();
+        menuTxt.text = "MAIN MENU";
+        menuTxt.fontSize = 32;
+        menuTxt.fontStyle = FontStyles.Bold;
+        menuTxt.alignment = TextAlignmentOptions.Center;
+        menuTxt.color = Color.white;
+        menuTxt.raycastTarget = false;
+        RectTransform menuTxtRt = menuTxtObj.GetComponent<RectTransform>();
+        menuTxtRt.anchorMin = Vector2.zero; menuTxtRt.anchorMax = Vector2.one;
+        menuTxtRt.offsetMin = Vector2.zero; menuTxtRt.offsetMax = Vector2.zero;
+
+        // [FIX] Ensure buttons are on top of everything
+        retryBtn.transform.SetAsLastSibling();
+        menuBtn.transform.SetAsLastSibling();
+
+        Debug.Log($"[GameManager] Buttons created. RETRY onClick: {retryBtnComp.onClick != null}, MENU onClick: {menuBtnComp.onClick != null}");
         
         // --- ANIMATION ---
-        // Score Count
         float elapsedTime = 0f;
         while(elapsedTime < 1.0f) {
             elapsedTime += Time.unscaledDeltaTime;
@@ -1180,47 +1198,26 @@ public class GameManager : MonoBehaviour
             t = 1 - (1-t)*(1-t); // Ease Out
             int dScore = (int)Mathf.Lerp(0, score, t);
             
-            // SCORE ANIMATION (With Label "SCORE")
             scoreTxt.text = $"SCORE  {dScore:N0}";
             yield return null;
         }
         scoreTxt.text = $"SCORE  {score:N0}";
-        
-        // Show Buttons
-        if (actionPanel != null) actionPanel.SetActive(true);
-        
-        // Rank Stamp Animation (Emphasis)
+
+        // Rank Scale Animation
         if (rTxt != null)
         {
-            rTxt.gameObject.SetActive(true);
-            // Huge Scale Start
-            rTxt.transform.localScale = Vector3.one * 5.0f; 
-            // Huge Scale Start
-            rTxt.transform.localScale = Vector3.one * 5.0f; 
-            
-            // NOTE: Alpha must be handled carefully with Gradient. Gradient alpha is multiplied by vertex alpha.
             rTxt.alpha = 0f; 
-
             float rElapsed = 0;
-            float rDur = 0.4f;
-            while(rElapsed < rDur) {
+            while(rElapsed < 0.4f) {
                  rElapsed += Time.unscaledDeltaTime;
-                 float t = rElapsed / rDur;
-                 // Easing: Bounce Out
+                 float t = rElapsed / 0.4f;
                  float s = Mathf.Lerp(5.0f, 1.0f, t * t); 
-                 rTxt.alpha = t; // Fade In
+                 rTxt.alpha = t; 
                  rTxt.transform.localScale = Vector3.one * s; 
                  yield return null;
             }
-            // Shake Effect
-            Vector3 basePos = rTxt.transform.localPosition;
-            for(int i=0; i<5; i++) {
-                rTxt.transform.localPosition = basePos + (Vector3)(UnityEngine.Random.insideUnitCircle * 10f);
-                yield return new WaitForSecondsRealtime(0.02f);
-            }
-            rTxt.transform.localPosition = basePos;
-            rTxt.transform.localScale = Vector3.one;
             rTxt.alpha = 1f;
+            rTxt.transform.localScale = Vector3.one;
         }
 
         // Particles
@@ -1820,5 +1817,76 @@ public class GameManager : MonoBehaviour
         shadow.effectDistance = new Vector2(0, -4);
     }
 
+    // [NEW] Display Current Song Title at Top Center
+    private void CreateSongTitleDisplay()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null) return;
+        
+        if (canvas.transform.Find("SongTitleDisplay") != null) return;
+        
+        GameObject titleObj = new GameObject("SongTitleDisplay");
+        titleObj.transform.SetParent(canvas.transform, false);
+        
+        TextMeshProUGUI txt = titleObj.AddComponent<TextMeshProUGUI>();
+        
+        // Determine Title
+        string currentTitle = isSecondScene ? "Sodapop" : "GALAXIAS!";
+        txt.text = $"♫ {currentTitle} ♫";
+        
+        // [FIX] Much Bigger Font & Size
+        txt.fontSize = 48; 
+        txt.fontStyle = FontStyles.Bold;
+        txt.color = new Color(1f, 1f, 1f, 0.95f);
+        txt.alignment = TextAlignmentOptions.Center;
+        
+        // Add Shadow/Outline
+        var outline = titleObj.AddComponent<UnityEngine.UI.Outline>();
+        outline.effectColor = new Color(0, 0, 0, 0.8f);
+        outline.effectDistance = new Vector2(2, -2);
+        
+        RectTransform rt = titleObj.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 1f); 
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0, -30); // Lower slightly
+        rt.sizeDelta = new Vector2(800, 80); // Bigger box
+    }
 
+
+    // [NEW] Failsafe Keyboard Shortcuts
+    private void LateUpdate()
+    {
+        if (!isPlaying) // Game Over or Menu
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                Debug.Log("[GameManager] 'R' key pressed -> Restarting...");
+                RestartGame();
+            }
+            if (Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                Debug.Log("[GameManager] 'M'/'Esc' key pressed -> Returning to Lobby...");
+                ReturnToLobby();
+            }
+        }
+    }
+    // [NEW] Helper for Text
+    private void CreateSimpleText(Transform parent, string name, string content, Vector2 pos, int fontSize, Color color)
+    {
+        GameObject textObj = new GameObject(name);
+        textObj.transform.SetParent(parent, false);
+        
+        RectTransform rt = textObj.AddComponent<RectTransform>();
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = new Vector2(400, 50);
+        
+        TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
+        tmp.text = content;
+        tmp.fontSize = fontSize;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontStyle = FontStyles.Normal;
+        tmp.raycastTarget = false; // Don't block clicks
+    }
 }
