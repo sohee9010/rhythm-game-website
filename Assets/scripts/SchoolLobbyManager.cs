@@ -48,7 +48,7 @@ public class SchoolLobbyManager : MonoBehaviour
 
     // [NEW] 배포 환경 URL 설정
     [Header("Deployment Settings")]
-    public string deployedFrontendUrl = "https://stepup-rhythm.vercel.app";
+    public string deployedFrontendUrl = "https://rhythm-game-frontend-ph63.onrender.com";
     public bool useLocalDevelopment = false; // Inspector에서 설정 가능
 
     private void PopulateQRConnection(GameObject panel)
