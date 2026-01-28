@@ -81,4 +81,7 @@ Frontend/.vite/
 # - Logs/ (로그 파일)
 # - obj/ (빌드 캐시)
 # - Frontend/node_modules/ (npm install로 재생성)
-# - Frontend/dist/ (빌드 결과물)
+# Frontend 빌드 파일 예외 처리
+!Frontend/public/game/Build/
+/Frontend/public/game/Build/game.data
+!Frontend/public/game/Build/game.data.part*
