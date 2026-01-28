@@ -139,10 +139,19 @@
               };
               var jsonStr = JSON.stringify(userProfile);
               console.log("[Unity-Web] Sending login to Unity:", jsonStr);
-              // Give Unity a moment to initialize scripts
-              setTimeout(() => {
-                unityInstance.SendMessage('NetworkManager', 'ReceiveReactLogin', jsonStr);
-              }, 2000);
+
+              // Retry sending login multiple times to ensure Unity is ready
+              var attempts = [2000, 5000, 10000];
+              attempts.forEach(function (delay) {
+                setTimeout(() => {
+                  try {
+                    unityInstance.SendMessage('NetworkManager', 'ReceiveReactLogin', jsonStr);
+                    console.log("[Unity-Web] Sent Login at " + delay + "ms");
+                  } catch (err) {
+                    console.log("[Unity-Web] Failed to send login at " + delay + "ms: " + err);
+                  }
+                }, delay);
+              });
             }
           } else {
             console.log("[Unity-Web] No session found in localStorage");
