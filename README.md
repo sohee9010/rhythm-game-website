@@ -12,9 +12,9 @@
 
 ---
 
-### 🥰 서비스 구경 바로가기
+### 🥰 라이브 게임 바로가기
 
-🖥 **서비스 주소 : https://rhythm-game-website.vercel.app**
+🖥 **라이브 데모 : https://rhythm-game-website.vercel.app**
 
 ---
 
